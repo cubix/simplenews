@@ -96,26 +96,35 @@
 (defn at-top? [item]
   (= (:level item) 0))
 
+(defn user-owns-item? [item user-id]
+  (= (:submitter item) user-id))
+
+(defn gen-vote-buttons [item]
+  (html " | "
+   [:a {:href (str "/up-vote/" (:id item)) } "up"] " | "
+   [:a {:href (str "/down-vote/" (:id item)) } "down"] ))
+
 (defn gen-comment-bar [item auth user-id]
   (html 
-   [:span.header (name (:submitter item)) " | " (:votes item) " | " 
+   [:span.header (name (:submitter item)) " | " (:votes item) 
     (when (at-top? item) ; show parent linke only at top of page
-      (html [:a {:href (str "/item/" (:parent item))} "parent"] " | ")) 
-    [:a {:href (str "/up-vote/" (:id item)) } "up"] " | "
-    [:a {:href (str "/down-vote/" (:id item)) } "down"]
+      (html " | "  [:a {:href (str "/item/" (:parent item))} "parent"])) 
+    (println "gen-comment-bar: user-id:" user-id "voted?" (voted? user-id  (:id item)))
+    (when (not (voted? user-id (:id item)))
+      (gen-vote-buttons item))
     (when (not (at-top? item))
       (html " | " [:a {:href (str "/item/" (:id item))} "reply"]))
-    (when (and auth (= (:submitter item) user-id)) 
+    (when (user-owns-item? item user-id)
       (html " | " [:a {:href (str "/edit/" (:id item))} "edit"]))]))
 
 
 (defn show-item [auth user-id item]
-  (html [:div {:class (indent-class item)}}
+  (html [:div {:class (indent-class item)}
 	 (gen-comment-bar item auth user-id)
 	 (when (:url item)
 	   [:p.itemtitle [:a {:href (:url item)} (:title item) ]])
 	   [:p (:body item)]
-	 (when  (= (:level item) 0) ;(nil? (:url item)))
+	 (when  (at-top? item)
 	   (show-comment-form (:id item) (:submitter item)))])) 
 
 (defn show-edit-form [item user auth]

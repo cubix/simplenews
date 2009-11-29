@@ -6,8 +6,6 @@
   (:use simplenews.data)
   (:use compojure))
 
- 
-
 (declare *session* *param* *request* *username* *auth* *id* *user-key*)
 
 (defn testweb []
@@ -90,8 +88,8 @@
     (serve-file *css-dir* (str (params :style) ".css")))
   (GET "/js/:script.js" 
     (serve-file *js-dir* (str (params :script) ".js")))
-  (GET "/images/:image"
-    (serve-file *image-dir* (params :image)))
+  (GET "/images/:image.gif"
+    (serve-file *image-dir* (str (params :image) ".gif")))
   (GET "/item/:id"
     (par-bind (do-item)))
   (GET "/new-user"

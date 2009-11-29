@@ -58,13 +58,16 @@
   (dosync 
    (let [item (find-item item-id)
 	 user (find-user (:submitter item))]
-     (if (and item user (not= vote-user (:submitter item))
+     (if (and item user ;(not= vote-user (:submitter item))
 	      (not (voted? vote-user item-id)))
        (let [new-item (mod-prop item :votes dir)
 	     new-user (mod-prop user :karma dir)]
 	 (update-item-list new-item)
 	 (update-user-list new-user)
 	 (update-vote-list vote-user item-id))))))
+
+(defn self-vote [user-id item-id]
+  (update-vote-list user-id item-id))
 
 (defn edit-item [item]
   (dosync 
@@ -119,7 +122,10 @@
        (do-vote (:id item) inc (:submitter item))
        (do (update-item-list item)
 	   (if (find-item (:parent item))
-	     (update-item-list (add-child (find-item (:parent item)) item))))))))
+	     (update-item-list (add-child (find-item (:parent item)) item)))
+	   (self-vote (:submitter item) (:id item))
+					;(do-vote (:id item) inc (:submitter item))
+	   )))))
 
 (defn count-children [item]
   (loop [queue [item] result 0]
