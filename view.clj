@@ -87,22 +87,36 @@
 	  [:a {:href (str "/item/" (:id item))} 
 	   (pluralize-noun "comment" comment-count "discuss" 0)])))
 
+(defn indent-class [item]
+  (let [level (if (nil? (:level item)) 0 (:level item))]
+    (if (> level 10) 
+      "levelmax"
+      (str "level" level))))
+
+(defn at-top? [item]
+  (= (:level item) 0))
+
+(defn gen-comment-bar [item auth user-id]
+  (html 
+   [:span.header (name (:submitter item)) " | " (:votes item) " | " 
+    (when (at-top? item) ; show parent linke only at top of page
+      (html [:a {:href (str "/item/" (:parent item))} "parent"] " | ")) 
+    [:a {:href (str "/up-vote/" (:id item)) } "up"] " | "
+    [:a {:href (str "/down-vote/" (:id item)) } "down"]
+    (when (not (at-top? item))
+      (html " | " [:a {:href (str "/item/" (:id item))} "reply"]))
+    (when (and auth (= (:submitter item) user-id)) 
+      (html " | " [:a {:href (str "/edit/" (:id item))} "edit"]))]))
+
+
 (defn show-item [auth user-id item]
-  (html [:div {:class (if (> (if (nil? (:level item)) 0 (:level item)) 10) "levelmax" (str "level" (:level item)))}
-	 [:span.header (name (:submitter item)) " | " (:votes item) " | " 
-	  (when (= (:level item) 0) (html [:a {:href (str "/item/" (:parent item))} "parent"] " | "))
-	  [:a {:href (str "/up-vote/" (:id item)) } "up"] " | "
-	  [:a {:href (str "/down-vote/" (:id item)) } "down"]
-	  (when (not= (:level item) 0) 
-	    (html " | " [:a {:href (str "/item/" (:id item))} "reply"]))
-	  (when (and auth (= (:submitter item) user-id)) 
-	    (html " | " [:a {:href (str "/edit/" (:id item))} "edit"]))]
+  (html [:div {:class (indent-class item)}}
+	 (gen-comment-bar item auth user-id)
 	 (when (:url item)
 	   [:p.itemtitle [:a {:href (:url item)} (:title item) ]])
 	   [:p (:body item)]
 	 (when  (= (:level item) 0) ;(nil? (:url item)))
-	   (show-comment-form (:id item) (:submitter item)))
-	 ])) 
+	   (show-comment-form (:id item) (:submitter item)))])) 
 
 (defn show-edit-form [item user auth]
   (show-page  
@@ -127,10 +141,10 @@
 			   [:td
 			    [:div 
 			     [:a {:href (str "/up-vote/" (:id item))} 
-			      [:img.updown {:src "http://ycombinator.com/images/grayarrow.gif"}]]]
+			      [:img.updown {:src "/images/uparrow.gif"}]]]
 			    [:div 
 			     [:a {:href (str "/down-vote/" (:id item))}
-			      [:img.updown {:src "http://ycombinator.com/images/graydown.gif"}]]] "\n"]
+			      [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
 			   [:td.itemtitle [:a {:href (:url item)} (:title item) ]] "\n"]
 			[:tr
 			 [:td]
@@ -138,17 +152,6 @@
 			 [:td.header
 			  (gen-status-line item)] "\n"]
 			[:tr])) items))]))
-
-(defn bf-trav [queue result]
-  (let [node  (first queue)
-	new-queue (rest queue)
-	level (:level node)]
-    (if (empty? queue)
-      result
-      (bf-trav (concat (order-items (map #(assoc-in (find-item %) [:level] (inc level))
-					 (:children node)))
-		       new-queue)
-	       (str result (show-item node) "\n")))))
 
 (defn bf-trav [queue result fn-acc fn-node-op]
   (let [node  (first queue)
@@ -162,10 +165,6 @@
 		       new-queue)
 	       (fn-acc result (fn-node-op node))
 	       fn-acc fn-node-op))))
-
-
-(defn bf-format [node-id]
-  (bf-trav [(assoc-in (find-item node-id) [:level] 0)] ""))
 
 (defn bf-format [auth user node-id]
   (bf-trav [(assoc-in (find-item node-id) [:level] 0)] 
