@@ -102,21 +102,25 @@
   (= (:submitter item) user-id))
 
 (defn gen-vote-buttons [item]
-  (html " | "
-    [:span [:div [:a {:href (str "/up-vote/" (:id item)) } [:img.updown {:src "/images/uparrow.gif"}]]] 
-    [:span [:a {:href (str "/down-vote/" (:id item)) } [:img.updown {:src "/images/downarrow.gif"}]]]]))
+  (html
+   [:table
+    [:tr [:td [:a {:href (str "/up-vote/" (:id item)) } [:img.updown {:src "/images/uparrow.gif"}]]]] 
+    [:tr [:td [:a {:href (str "/down-vote/" (:id item)) } [:img.updown {:src "/images/downarrow.gif"}]]]]]))
 
 (defn gen-comment-bar [item auth user-id]
   (html 
-   [:span.header (name (:submitter item)) " | " (:votes item) 
-    (when (at-top? item)
-      (html " | "  [:a {:href (str "/item/" (:parent item))} "parent"])) 
-    (when (not (voted? user-id (:id item)))
-      (gen-vote-buttons item))
-    (when (not (at-top? item))
-      (html " | " [:a {:href (str "/item/" (:id item))} "reply"]))
-    (when (user-owns-item? item user-id)
-      (html " | " [:a {:href (str "/edit/" (:id item))} "edit"]))]))
+   [:div.header 
+    [:table
+     [:tr 
+      [:td (when (not (voted? user-id (:id item)))
+	    (gen-vote-buttons item)) ]
+      [:td (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago"] 
+      [:td (when (at-top? item)
+	     (html "| "  [:a {:href (str "/item/" (:parent item))} "parent"])) ]
+      [:td (when (not (at-top? item))
+	     (html "| " [:a {:href (str "/item/" (:id item))} "reply"]))]
+      [:td (when (user-owns-item? item user-id)
+	     (html "| " [:a {:href (str "/edit/" (:id item))} "edit"]))]]]]))
 
 (defn show-item [auth user-id item]
   (html [:div {:class (indent-class item)}
