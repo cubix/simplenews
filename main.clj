@@ -109,7 +109,7 @@
   (GET "/login"
     (show-page (show-login-form)))
   (GET "/auth-user"
-    (if (validate-user (keyword (params :username)) (params :password))
+    (if (valid-user? (keyword (params :username)) (params :password))
       [ (set-session (assoc (assoc session :authenticated 'true) 
 		       :username (params :username))) 
 	(redirect-to (if (nil? (session :nextpage)) "/" (session :nextpage)))]

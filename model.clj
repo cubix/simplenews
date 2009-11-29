@@ -3,13 +3,77 @@
   (:use simplenews.util)
   (:use clojure.contrib.duck-streams))
 
+;; Define structs
+
 (defstruct news-item :id :timestamp :title :url :votes :body :children :parent :submitter)
 (defstruct user :username :password :karma :created)
+
+;; References for stateful data
 
 (def item-list (ref { 0 (struct news-item 0 (time-now) *site-name* "/" 0 nil [] nil :cubix)}))
 (def user-list (ref { :admin (struct user :admin "password" 0 0)}))
 (def vote-list (ref {}))
 (def item-counter (ref 0))
+
+;; Abstract the storage since this will likely change
+
+(defn find-item [id]
+  (get @item-list id))
+
+(defn find-user [user-id]
+  (get @user-list user-id))
+
+(defn find-votes [user-id]
+  (get @vote-list user-id))
+
+(defn get-user-list []
+  @user-list)
+
+;; Queries
+
+(defn voted? [user item-id]
+  (get (find-votes user) item-id))
+
+(defn valid-user? [username password]
+  (= (:password (find-user username)) password))
+
+(defn submitted-before? [url]
+  (first (filter (fn [[id item]] 
+		   (= url (:url item))) 
+		 (get-user-list))))
+
+(defn user-owns-item? [item user-id]
+  (= (:submitter item) user-id))
+
+;; Stateless modifications to individual items
+
+(defn add-child [parent child]
+  (assoc-in parent [:children]
+	    (vec (cons (:id child) 
+		       (:children parent)))))
+
+(defn mod-prop [obj prop op]
+  (assoc-in obj [prop] (op (prop obj))))
+
+(defn add-vote [votes item-id]
+  (assoc-in votes [item-id] 1))
+
+;; Alter functions
+
+(defn update-user-list [user]
+  (alter user-list assoc-in [(:username user)] user))
+
+(defn update-item-list [item]
+  (alter item-list assoc-in [(:id item)] item))
+
+(defn update-vote-list [user item-id]
+  (let [new-votes (add-vote (find-votes user) item-id)]
+    (alter vote-list assoc-in [user] new-votes)))
+
+(defn self-vote [user-id item-id]
+  (update-vote-list user-id item-id))
+
+;; Make stateful changes and enforce relationships
 
 (defn create-item [title url body parent-id user]
   (dosync (alter item-counter inc)
@@ -19,40 +83,6 @@
 		    (str "/item/" @item-counter) 
 		    url)
 		  1 body nil parent-id user)))
-
-
-(defn add-child [parent child]
-  (assoc-in parent [:children]
-	    (cons (:id child) 
-		  (vec (:children parent)))))
-
-(defn mod-prop [obj prop op]
-  (assoc-in obj [prop] (op (prop obj))))
-
-(defn update-user-list [user]
-  (alter user-list assoc-in [(:username user)] user))
-
-(defn update-item-list [item]
-  (alter item-list assoc-in [(:id item)] item))
-
-(defn find-item [id]
-  (get @item-list id))
-
-(defn find-user [username]
-  (get @user-list username))
-
-(defn get-user-list []
-  @user-list)
-
-(defn voted? [user item-id]
-  (get (get @vote-list user) item-id))
-
-(defn add-vote [votes item-id]
-  (assoc-in votes [item-id] 1))
-
-(defn update-vote-list [user item-id]
-  (let [new-votes (add-vote (get @vote-list user) item-id)]
-    (alter vote-list assoc-in [user] new-votes)))
 
 (defn do-vote [item-id dir vote-user]
   (dosync 
@@ -66,12 +96,33 @@
 	 (update-user-list new-user)
 	 (update-vote-list vote-user item-id))))))
 
-(defn self-vote [user-id item-id]
-  (update-vote-list user-id item-id))
-
+; kind of dangerous
 (defn edit-item [item]
   (dosync 
    (update-item-list item)))
+
+(defn add-user [username password]
+  (let [user-key (keyword username)]
+    (dosync 
+     (if (nil? (find-user user-key))
+       (alter user-list assoc-in [user-key] 
+	      (struct-map user 
+		:username user-key
+		:password password :karma 0 
+		:created (time-now)))))))
+
+(defn submit [item]
+  (dosync 
+   (if (get @user-list (:submitter item))
+     (if (and (not= nil (:url item)) (submitted-before? (:url item)))
+       (do-vote (:id item) inc (:submitter item))
+       (do (update-item-list item)
+	   (if (find-item (:parent item))
+	     (update-item-list (add-child (find-item (:parent item)) item)))
+	   (self-vote (:submitter item) (:id item)))))))
+
+
+;; Stateless operations on data
 
 (defn calc-rank [votes timestamp]
   (/ (- votes 1)
@@ -99,32 +150,6 @@
       (sort-by :rank rev-comp
 	       (rank items)))))
 
-(defn add-user [username password]
-  (let [user-key (keyword username)]
-    (dosync 
-     (if (nil? (find-user user-key))
-       (alter user-list assoc-in [user-key] 
-	      (struct-map user 
-		:username user-key
-		:password password :karma 0 
-		:created (time-now)))))))
-
-(defn validate-user [username password]
-  (= (:password (find-user username)) password))
-
-(defn submitted-before? [url]
-  (first (filter (fn [[id item]] (= url (:url item))) (get-user-list))))
-
-(defn submit [item]
-  (dosync 
-   (if (get @user-list (:submitter item))
-     (if (and (not= nil (:url item)) (submitted-before? (:url item)))
-       (do-vote (:id item) inc (:submitter item))
-       (do (update-item-list item)
-	   (if (find-item (:parent item))
-	     (update-item-list (add-child (find-item (:parent item)) item)))
-	   (self-vote (:submitter item) (:id item)))))))
-
 (defn bf-trav 
   "Does a breadth-first traversal of the item tree marking each node
   with the level. fn-acc is the accumalator function and fn-node-op is
@@ -144,3 +169,4 @@
 
 (defn count-children [item]
   (bf-trav (assoc-in item [:level] 0) 0 + #(count (:children %))))
+

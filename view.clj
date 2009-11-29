@@ -16,7 +16,6 @@
     (include-js (str "/js/" script ".js"))))
 
 (defn show-page [page & [auth user-id]]
-  (println "show-page: user-id" user-id)
   (html
    (doctype :html4)
     [:html
@@ -98,14 +97,13 @@
 (defn at-top? [item]
   (= (:level item) 0))
 
-(defn user-owns-item? [item user-id]
-  (= (:submitter item) user-id))
-
 (defn gen-vote-buttons [item]
   (html
    [:table
-    [:tr [:td [:a {:href (str "/up-vote/" (:id item)) } [:img.updown {:src "/images/uparrow.gif"}]]]] 
-    [:tr [:td [:a {:href (str "/down-vote/" (:id item)) } [:img.updown {:src "/images/downarrow.gif"}]]]]]))
+    [:tr [:td [:a {:href (str "/up-vote/" (:id item)) } 
+	       [:img.updown {:src "/images/uparrow.gif"}]]]] 
+    [:tr [:td [:a {:href (str "/down-vote/" (:id item)) }
+	       [:img.updown {:src "/images/downarrow.gif"}]]]]]))
 
 (defn gen-comment-bar [item auth user-id]
   (html 
