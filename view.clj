@@ -1,9 +1,7 @@
 (ns simplenews.view
     (:use simplenews.util)
     (:use simplenews.model)
-    (:use compojure)
-    (:use [compojure.http.response :only (create-response)]))
-
+    (:use compojure))
     
 (defn styles
   "Return HTML to include CSS stylesheets."
@@ -39,7 +37,6 @@
 	  [:span.tab [:a {:href "/login"} "Login"]])]
 	page]]))
 
-
 (defn show-submit-form [item]
   (html
    (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
@@ -52,21 +49,6 @@
      [:div#submitcomment (text-area "comment")]
      [:div#submitbutton (submit-button "add")])))
 
-
-;; (defn show-comment-form [item-id user & [edit]]
-;;   (let [item (find-item item-id)]
-;;     (html
-;;      (form-to [:post (str (if edit "/edit/" "/comment/") item-id )]
-;;        (hidden-field "parent-id" (:parent item))
-;;        (hidden-field "comment")
-;;        [:div [:textarea {:name "comment-in"
-;; 			 :value (if edit (:body item) "")
-;; 			 :onKeyPress "document.getElementById('comment').value = escapeVal(comment-in.value)"}]]
-;;        [:div [:input {:type "submit"
-;; 		      :name "submitcomment"
-;; 		      :value (if edit "update" "add")
-;; 		      }]]))))
-
 (defn show-comment-form [item-id user & [edit]]
   (let [item (find-item item-id)]
     (html
@@ -78,7 +60,6 @@
 		      :name "submitcomment"
 		      :value (if edit "update" "add")
 		      :onClick "document.getElementById('comment').value = escapeVal(document.getElementById('comment-in').value)"}]]))))
-
 
 (defn show-user-form []
   (html
@@ -97,8 +78,6 @@
       (password-field "password")]
      [:div (submit-button "submit")])))
 
-
-      
 (defn gen-status-line [item]
   (let [comment-count (count-children item)]
     (html (name (:submitter item)) " | "
@@ -107,18 +86,6 @@
 	  " | "
 	  [:a {:href (str "/item/" (:id item))} 
 	   (pluralize-noun "comment" comment-count "discuss" 0)])))
-
-(defn show-item [item]
-  (html [:div {:class (if (> (if (nil? (:level item)) 0 (:level item)) 10) "levelmax" (str "level" (:level item)))}
-	 [:span.header (name (:submitter item)) " | " (:votes item) " | " 
-
-	  [:a {:href (str "/up-vote/" (:id item)) } "up"] " | "
-	  [:a {:href (str "/down-vote/" (:id item)) } "down"] " | " 
-	  [:a {:href (str "/reply/" (:id item))} "reply"]]
-	 (if (not (nil? (:title item)))
-	   [:p.itemtitle [:a {:href (:url item)} (:title item) ]]
-	   [:p (:body item)])])) 
-
 
 (defn show-item [auth user-id item]
   (html [:div {:class (if (> (if (nil? (:level item)) 0 (:level item)) 10) "levelmax" (str "level" (:level item)))}

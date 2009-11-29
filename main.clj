@@ -41,7 +41,8 @@
 
 (defn do-item []
   (if (find-item *id*)
-    (show-page (bf-format *auth* *user-key* *id*) *auth* *user-key*)
+    (show-page (bf-format *auth* *user-key* *id*) 
+	       *auth* *user-key*)
     [404 "page not found"]))
 
 (defn do-vote-cast [fdir]
@@ -53,7 +54,6 @@
 
 (defn do-edit []
   (let [item (find-item *id*)]
-    (println "edit: *user-key*:" *user-key* " username:" (:username item) "item:" item)
     (if (and (= *user-key* (:submitter item))
 	     (not= (:body item) (:comment *param*)))
       (edit-item (assoc-in item [:body] (:comment *param*))))
