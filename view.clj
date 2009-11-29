@@ -87,7 +87,9 @@
 	  [:a {:href (str "/item/" (:id item))} 
 	   (pluralize-noun "comment" comment-count "discuss" 0)])))
 
-(defn indent-class [item]
+(defn indent-class
+  "Determines div class for indentation level."
+  [item]
   (let [level (if (nil? (:level item)) 0 (:level item))]
     (if (> level 10) 
       "levelmax"
@@ -107,16 +109,14 @@
 (defn gen-comment-bar [item auth user-id]
   (html 
    [:span.header (name (:submitter item)) " | " (:votes item) 
-    (when (at-top? item) ; show parent linke only at top of page
+    (when (at-top? item)
       (html " | "  [:a {:href (str "/item/" (:parent item))} "parent"])) 
-    (println "gen-comment-bar: user-id:" user-id "voted?" (voted? user-id  (:id item)))
     (when (not (voted? user-id (:id item)))
       (gen-vote-buttons item))
     (when (not (at-top? item))
       (html " | " [:a {:href (str "/item/" (:id item))} "reply"]))
     (when (user-owns-item? item user-id)
       (html " | " [:a {:href (str "/edit/" (:id item))} "edit"]))]))
-
 
 (defn show-item [auth user-id item]
   (html [:div {:class (indent-class item)}
@@ -162,7 +162,11 @@
 			  (gen-status-line item)] "\n"]
 			[:tr])) items))]))
 
-(defn bf-trav [queue result fn-acc fn-node-op]
+(defn bf-trav 
+  "Does a breadth-first traversal of the item tree marking each node
+  with the level. fn-acc is the accumalator function and fn-node-op is
+  performed on each node."
+  [queue result fn-acc fn-node-op]
   (let [node  (first queue)
 	new-queue (rest queue)
 	level (:level node)]
