@@ -53,17 +53,32 @@
      [:div#submitbutton (submit-button "add")])))
 
 
+;; (defn show-comment-form [item-id user & [edit]]
+;;   (let [item (find-item item-id)]
+;;     (html
+;;      (form-to [:post (str (if edit "/edit/" "/comment/") item-id )]
+;;        (hidden-field "parent-id" (:parent item))
+;;        (hidden-field "comment")
+;;        [:div [:textarea {:name "comment-in"
+;; 			 :value (if edit (:body item) "")
+;; 			 :onKeyPress "document.getElementById('comment').value = escapeVal(comment-in.value)"}]]
+;;        [:div [:input {:type "submit"
+;; 		      :name "submitcomment"
+;; 		      :value (if edit "update" "add")
+;; 		      }]]))))
+
 (defn show-comment-form [item-id user & [edit]]
   (let [item (find-item item-id)]
     (html
-     (form-to [:post (str (if edit "/edit/" "/comment/") item-id )]
+     (form-to [:post (str (if edit "/edit/" "/comment/") item-id )] 
        (hidden-field "parent-id" (:parent item))
        (hidden-field "comment")
-       [:div (text-area "comment-input" (if edit (:body item) ""))]
+       [:div (text-area "comment-in" (if edit (:body item) ""))]
        [:div [:input {:type "submit"
 		      :name "submitcomment"
 		      :value (if edit "update" "add")
-		      :onClick "escapeVal(comment-input,'<br>'); comment.value = comment-input.value;"}]]))))
+		      :onClick "document.getElementById('comment').value = escapeVal(document.getElementById('comment-in').value)"}]]))))
+
 
 (defn show-user-form []
   (html
