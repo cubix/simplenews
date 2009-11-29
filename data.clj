@@ -15,9 +15,9 @@
 	  (ref-set item-counter (load-file (str dir "/item-counter.clj")))
 	  (ref-set user-list (load-file (str dir "/user-list.clj")))))
 
-(defn backup-agent [dir sleep-time]
+(defn backup-agent [[dir sleep-time]]
   (save-state-files dir)
-  (send-off (agent dir) backup-agent)
+  (send-off (agent [dir sleep-time]) backup-agent)
   (Thread/sleep sleep-time))
 
-(backup-agent *data-dir* *sleep-time*)
+(backup-agent [*data-dir* *sleep-time*])

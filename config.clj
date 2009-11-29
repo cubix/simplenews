@@ -6,3 +6,4 @@
 (def *image-dir* "/Users/cubix/code/simplenews/images")
 (def *data-dir* "/Users/cubix/code/simplenews/data")
 (def *sleep-time* 60000)
+(def *port* 8080)

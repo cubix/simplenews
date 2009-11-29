@@ -4,8 +4,7 @@
   (:use simplenews.model)
   (:use simplenews.view)
   (:use simplenews.data)
-  (:use compojure)
-  (:use [compojure.http.response :only (create-response)]))
+  (:use compojure))
 
  
 
@@ -89,7 +88,7 @@
     (redirect-to "/"))
   (GET "/css/:style.css" 
     (serve-file *css-dir* (str (params :style) ".css")))
-  (GET "/css/:script.css" 
+  (GET "/js/:script.js" 
     (serve-file *js-dir* (str (params :script) ".js")))
   (GET "/images/:image"
     (serve-file *image-dir* (params :image)))
@@ -152,6 +151,7 @@
        (redirect-to "/")]))
 
 (decorate auth-routes  with-auth with-clean with-session)
+;(decorate auth-routes  with-auth with-session)
 (decorate sess-routes  with-clean with-session )
 (decorate public-routes  with-session)
 
@@ -162,6 +162,6 @@
   (ANY "*"
     [404 "Page not found"]))
 
-(run-server {:port 8080}
+(run-server {:port *port*}
   "/*" (servlet all-routes))
 
