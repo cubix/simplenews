@@ -123,16 +123,24 @@
        (do (update-item-list item)
 	   (if (find-item (:parent item))
 	     (update-item-list (add-child (find-item (:parent item)) item)))
-	   (self-vote (:submitter item) (:id item))
-					;(do-vote (:id item) inc (:submitter item))
-	   )))))
+	   (self-vote (:submitter item) (:id item)))))))
+
+(defn bf-trav 
+  "Does a breadth-first traversal of the item tree marking each node
+  with the level. fn-acc is the accumalator function and fn-node-op is
+  performed on each node."
+  [item start fn-acc fn-node-op]
+  (loop [queue [item] result start]
+    (let [node  (first queue)
+	  new-queue (rest queue)
+	  level  (inc (or (:level node) 0))]
+      (if (empty? queue)
+      result
+      (recur (concat (order-items 
+		      (map #(assoc-in (find-item %) [:level]  level)
+			   (:children node)))
+		     new-queue)
+	     (fn-acc result (fn-node-op node)))))))
 
 (defn count-children [item]
-  (loop [queue [item] result 0]
-    (let [node (first queue)
-	  new-queue (rest queue)]
-      (if (empty? queue)
-	result
-	(recur (concat new-queue (map find-item (:children node)))
-	       (+ result (count (:children node))))))))
-
+  (bf-trav (assoc-in item [:level] 0) 0 + #(count (:children %))))

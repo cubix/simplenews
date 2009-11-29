@@ -103,8 +103,8 @@
 
 (defn gen-vote-buttons [item]
   (html " | "
-   [:a {:href (str "/up-vote/" (:id item)) } "up"] " | "
-   [:a {:href (str "/down-vote/" (:id item)) } "down"] ))
+    [:span [:div [:a {:href (str "/up-vote/" (:id item)) } [:img.updown {:src "/images/uparrow.gif"}]]] 
+    [:span [:a {:href (str "/down-vote/" (:id item)) } [:img.updown {:src "/images/downarrow.gif"}]]]]))
 
 (defn gen-comment-bar [item auth user-id]
   (html 
@@ -162,23 +162,7 @@
 			  (gen-status-line item)] "\n"]
 			[:tr])) items))]))
 
-(defn bf-trav 
-  "Does a breadth-first traversal of the item tree marking each node
-  with the level. fn-acc is the accumalator function and fn-node-op is
-  performed on each node."
-  [queue result fn-acc fn-node-op]
-  (let [node  (first queue)
-	new-queue (rest queue)
-	level (:level node)]
-    (if (empty? queue)
-      result
-      (bf-trav (concat (order-items 
-			(map #(assoc-in (find-item %) [:level] (inc level))
-			     (:children node)))
-		       new-queue)
-	       (fn-acc result (fn-node-op node))
-	       fn-acc fn-node-op))))
 
 (defn bf-format [auth user node-id]
-  (bf-trav [(assoc-in (find-item node-id) [:level] 0)] 
+  (bf-trav (assoc-in (find-item node-id) [:level] 0)
 	   "" str (partial show-item auth user)))
