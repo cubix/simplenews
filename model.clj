@@ -79,9 +79,10 @@
   (dosync (alter item-counter inc)
 	  (struct news-item @item-counter (time-now)
 		  title
-		  (if (empty? url)
-		    (str "/item/" @item-counter) 
-		    url)
+		  url
+					;(if (empty? url)
+		  ;  (str "/item/" @item-counter) 
+		   ; url)
 		  1 body nil parent-id user)))
 
 (defn do-vote [item-id dir vote-user]

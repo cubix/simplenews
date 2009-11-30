@@ -157,7 +157,51 @@ h2 {font-size:1.875em}
     top: 400px;
     left: 20px;
 }
+#edittitle {
+    position: absolute;
+    top: 50px;
+    left: 20px;
+}
 
+#editand {
+    position: absolute;
+    top: 65px;
+    left: 40px;
+}
+
+#editurl {
+    position: absolute;
+    top: 110px;
+    left: 20px;
+}
+#editcommentlbl {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+}
+#editcomment {
+    position: absolute;
+    top: 110px;
+    left: 20px;
+}
+
+#editor {
+    position: absolute;
+    top: 125px;
+    left: 40px;
+}   
+
+#editbutton {
+    position: absolute;
+    top: 320px;
+    left: 20px;
+}
+
+#editbuttonurl {
+    position: absolute;
+    top: 150px;
+    left: 20px;
+}
 .navigator {
 	font-family: Verdana, Geneva, sans-serif;
 	font-size: large;
@@ -186,7 +230,7 @@ label {
     width: 500px;
     height: 200px;
 }
-#titlediv {
-    border-right: 3px;
-    border-left: 3px;
+#comment {
+    width: 500px;
+    height: 200px;
 }

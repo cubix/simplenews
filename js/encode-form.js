@@ -1,3 +1,7 @@
+google.load("jquery", "1.3.2");
+
+
+
 function escapeVal(strIn)
 {
   var replaceWith = '<br/>';

@@ -50,11 +50,19 @@
       [(redirect-to (format "/" *id*))])
     "Error"))
 
+; TODO: this is insanely ugly
+(defn edited-item [item]
+  (println "item:" item)
+  (let [new-title (if (*param* :title) (assoc item :title (*param* :title)) item)
+	new-url (if (*param* :url) (assoc new-title :url (*param* :url)) new-title)
+	new-body (if (*param* :comment) (assoc  new-url :body (*param* :comment)) new-url)]
+    (println "new item:" new-body)
+    new-body))
+
 (defn do-edit []
   (let [item (find-item *id*)]
-    (if (and (= *user-key* (:submitter item))
-	     (not= (:body item) (:comment *param*)))
-      (edit-item (assoc-in item [:body] (:comment *param*))))
+    (if (= *user-key* (:submitter item))
+      (edit-item (edited-item item)))
     (redirect-to (str "/item/" *id*))))
 
 (defn do-front []
@@ -126,7 +134,14 @@
 			*user-key*)))))
   (GET "/edit/:id"
     (par-bind
-      (show-edit-form (find-item *id*) *user-key* *auth*)))
+      (let [item (find-item *id*)] ;TODO: god damn ugly
+	(show-page (cond (is-comment? item)
+			 (show-edit-comment-form item)
+			 (is-essay? item)
+			 (show-edit-essay-form item)
+			 (is-url? item)
+			 (show-edit-url-form item))
+		   *auth* *user-key*))))
   (POST "/edit/:id"
     (par-bind
       (do-edit)))

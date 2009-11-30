@@ -36,6 +36,22 @@
 	  [:span.tab [:a {:href "/login"} "Login"]])]
 	page]]))
 
+(defn show-submit-form [item & edit]
+  (html
+   (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
+     (hidden-field "parent-id" (:parent item))
+     (if (or (not edit)  (:url item))
+       (html
+	[:div#submittitle (label "title-lbl" "Title") (text-field "title" (if edit (:title item))) ]
+	[:div#submitand [:p "and"]]
+	[:div#submiturl (label "url-lbl" "URL") (text-field "url" (if edit (:url item)))]))
+     (if (or (not edit) (not (:url item)))
+       (html 
+	(when (not edit) [:div#submitor [:p "or"]])
+	[:div#submitcommentlbl (label "comment-lbl" "Comment")]
+	[:div#submitcomment (text-area "comment" (if edit (:body item)))]))
+     [:div#submitbutton (submit-button (if edit "update" "add"))])))
+
 (defn show-submit-form [item]
   (html
    (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
@@ -47,6 +63,56 @@
      [:div#submitcommentlbl (label "comment-lbl" "Comment")]
      [:div#submitcomment (text-area "comment")]
      [:div#submitbutton (submit-button "add")])))
+
+(defn is-comment? [item]
+  (and (not (:title item)) (not (:url item)) (:body item)))
+
+(defn is-essay? [item]
+  (and (:title item) (= "" (:url item)) (:body item)))
+
+(defn is-url? [item]
+  (and (:title item) (:url item)))
+
+;; (defn show-edit-form [item]
+;;   (html
+;;    (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
+;;      (hidden-field "parent-id" (:parent item))
+;;      (if (not (is-comment? item))
+;;        (html [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
+;; 	     [:div#editand [:p "and"]]))
+;;      (if (item :url)
+;;        [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]
+;;        (html 
+;; 	[:div#editcommentlbl (label "comment-lbl" "Comment")]
+;; 	[:div#editcomment (text-area "comment" (item :body))]))
+;;      [:div#editbutton (submit-button "add")])))
+
+(defn show-edit-comment-form [item]
+  (html 
+   (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+     (hidden-field "parent-id" (:parent item))
+     [:div#editcommentlbl (label "comment-lbl" "Comment")]
+     [:div#editcomment (text-area "comment" (item :body))]
+     [:div#editbutton (submit-button "update")])))
+
+(defn show-edit-essay-form [item]
+  (html 
+   (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+     (hidden-field "parent-id" (:parent item))
+     [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
+     [:div#editcommentlbl (label "comment-lbl" "Comment")]
+     [:div#editcomment (text-area "comment" (item :body))]
+     [:div#editbutton (submit-button "update")])))
+
+(defn show-edit-url-form [item]
+  (html
+   (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+     (hidden-field "parent-id" (:parent item))
+     [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title))]
+     [:div#editand [:p "and"]]
+     [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]
+     [:div#editbuttonurl (submit-button "update")])))
+  
 
 (defn show-comment-form [item-id user & [edit]]
   (let [item (find-item item-id)]
@@ -132,10 +198,8 @@
 (defn show-edit-form [item user auth]
   (show-page  
    (html 
-    (when (:title item)
-      [:div (text-area "title" (:title item))]
-      (when (:url item)
-	[:div (text-area "url" (:url item))]))
+    [:div#submittitle (text-area "title" (:title item))]
+    (when (item :url) [:div#submiturl (text-area "url-edit-ta" (:url item))])
     (if (:body item)
       (html
        [:p (:body item)]
