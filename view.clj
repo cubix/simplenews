@@ -87,31 +87,70 @@
 ;; 	[:div#editcomment (text-area "comment" (item :body))]))
 ;;      [:div#editbutton (submit-button "add")])))
 
-(defn show-edit-comment-form [item]
-  (html 
-   (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
-     (hidden-field "parent-id" (:parent item))
-     [:div#editcommentlbl (label "comment-lbl" "Comment")]
-     [:div#editcomment (text-area "comment" (item :body))]
-     [:div#editbutton (submit-button "update")])))
+(defn nil-if-blank [str]
+  (if (is-blank? str) nil str))
 
-(defn show-edit-essay-form [item]
-  (html 
-   (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
-     (hidden-field "parent-id" (:parent item))
-     [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
-     [:div#editcommentlbl (label "comment-lbl" "Comment")]
-     [:div#editcomment (text-area "comment" (item :body))]
-     [:div#editbutton (submit-button "update")])))
+(defmulti show-edit-fields
+  (fn [item]
+    (let [title (nil-if-blank (:title item))
+	  body (nil-if-blank (:body item))
+	  url (nil-if-blank (:url item))]
+    (cond  
+      (and (not title) (not url) body) 'comment
+      (and title url (not body)) 'url
+      (and title (not url) body) 'essay
+      :else 'unknown))))
 
-(defn show-edit-url-form [item]
+(defmethod show-edit-fields 'comment [item]    
   (html
+     [:div#editcommentlbl (label "comment-lbl" "Comment")]
+     [:div#editcomment (text-area "comment" (item :body))]))
+
+(defmethod show-edit-fields 'essay [item]
+  (html
+   [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
+   [:div#editcommentlbl (label "comment-lbl" "Comment")]
+   [:div#editcomment (text-area "comment" (item :body))]))
+
+(defmethod show-edit-fields 'url [item]
+  (html
+   [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title))]
+   [:div#editand [:p "and"]]
+   [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]))
+
+
+(defn show-edit-form [item]
+  (html 
    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
      (hidden-field "parent-id" (:parent item))
-     [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title))]
-     [:div#editand [:p "and"]]
-     [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]
-     [:div#editbuttonurl (submit-button "update")])))
+     (show-edit-fields item)
+     [:div#editbutton (submit-button "update")])))
+
+;; (defn show-edit-comment-form [item]
+;;   (html 
+;;    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+;;      (hidden-field "parent-id" (:parent item))
+;;      [:div#editcommentlbl (label "comment-lbl" "Comment")]
+;;      [:div#editcomment (text-area "comment" (item :body))]
+;;      [:div#editbutton (submit-button "update")])))
+
+;; (defn show-edit-essay-form [item]
+;;   (html 
+;;    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+;;      (hidden-field "parent-id" (:parent item))
+;;      [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
+;;      [:div#editcommentlbl (label "comment-lbl" "Comment")]
+;;      [:div#editcomment (text-area "comment" (item :body))]
+;;      [:div#editbutton (submit-button "update")])))
+
+;; (defn show-edit-url-form [item]
+;;   (html
+;;    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+;;      (hidden-field "parent-id" (:parent item))
+;;      [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title))]
+;;      [:div#editand [:p "and"]]
+;;      [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]
+;;      [:div#editbuttonurl (submit-button "update")])))
   
 
 (defn show-comment-form [item-id user & [edit]]
@@ -206,6 +245,13 @@
        (show-comment-form (:id item)
 			  user true))))))
 
+(defn derive-url [item]
+  (if (or (nil? (:url item)) (= "" (:url item)))
+    (str "/item/" (:id item))
+    (:url item)))
+
+	
+
 (defn show-front []
   (html [:table 
 	 (let [items (order-items 
@@ -220,7 +266,7 @@
 			    [:div 
 			     [:a {:href (str "/down-vote/" (:id item))}
 			      [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
-			   [:td.itemtitle [:a {:href (:url item)} (:title item) ]] "\n"]
+			   [:td.itemtitle [:a {:href (derive-url item)} (:title item) ]] "\n"]
 			[:tr
 			 [:td]
 			 [:td]

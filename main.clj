@@ -135,12 +135,13 @@
   (GET "/edit/:id"
     (par-bind
       (let [item (find-item *id*)] ;TODO: god damn ugly
-	(show-page (cond (is-comment? item)
-			 (show-edit-comment-form item)
-			 (is-essay? item)
-			 (show-edit-essay-form item)
-			 (is-url? item)
-			 (show-edit-url-form item))
+	(show-page (show-edit-form item)
+	            ;; (cond (is-comment? item)
+;; 			 (show-edit-comment-form item)
+;; 			 (is-essay? item)
+;; 			 (show-edit-essay-form item)
+;; 			 (is-url? item)
+;; 			 (show-edit-url-form item))
 		   *auth* *user-key*))))
   (POST "/edit/:id"
     (par-bind
