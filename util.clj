@@ -8,15 +8,18 @@
 (defn clean-input [input-str]
   (if (not= nil input-str)
     (.getCleanHTML 
-     (.scan *antisamy* input-str *input-policy*))))
+     (. *antisamy* scan input-str *input-policy*))))
 
 (defn is-blank? [str-in]
   (or (nil? str-in) (re-find #"^\s*$" str-in)))
 
+(defn nil-if-blank [str]
+  (if (is-blank? str) nil str))
+
 (defn clean-map [m]
   (or (apply merge 
 	     (map (fn [[k v]]
-		    { k (clean-input v) }) m)) 
+		    { k (if (instance? String v) (nil-if-blank (clean-input v)) v)}) m)) 
       {}))
 
 (defn mod-map [m kfn vfn]
@@ -27,6 +30,15 @@
 
 (defn mod-map-key [m kfn]
   (partial mod-map kfn))
+
+(defn select-vals [a-map keys] 
+  (into {} 
+	(map #(if (%1 a-map) {%1 (%1 a-map)})
+	     keys)))
+
+(defn no-nil-vals [ & maps]
+  (apply (partial merge-with #(or (nil-if-blank %2) (nil-if-blank %1))) maps))
+
 
 (defn pluralize-noun [noun num & [special case]]
   (cond 

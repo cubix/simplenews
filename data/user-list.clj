@@ -1,1 +1,0 @@
-{:admin {:username :admin, :password "password", :karma 0, :created 0}}

@@ -64,59 +64,48 @@
      [:div#submitcomment (text-area "comment")]
      [:div#submitbutton (submit-button "add")])))
 
-(defn is-comment? [item]
-  (and (not (:title item)) (not (:url item)) (:body item)))
 
-(defn is-essay? [item]
-  (and (:title item) (= "" (:url item)) (:body item)))
 
-(defn is-url? [item]
-  (and (:title item) (:url item)))
 
-;; (defn show-edit-form [item]
-;;   (html
-;;    (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
-;;      (hidden-field "parent-id" (:parent item))
-;;      (if (not (is-comment? item))
-;;        (html [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
-;; 	     [:div#editand [:p "and"]]))
-;;      (if (item :url)
-;;        [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]
-;;        (html 
-;; 	[:div#editcommentlbl (label "comment-lbl" "Comment")]
-;; 	[:div#editcomment (text-area "comment" (item :body))]))
-;;      [:div#editbutton (submit-button "add")])))
 
-(defn nil-if-blank [str]
-  (if (is-blank? str) nil str))
-
-(defmulti show-edit-fields
-  (fn [item]
-    (let [title (nil-if-blank (:title item))
-	  body (nil-if-blank (:body item))
-	  url (nil-if-blank (:url item))]
+(defn classify-item [item]
+  (let [title  (:title item)
+	body (:body item)
+	url (:url item)]
     (cond  
       (and (not title) (not url) body) 'comment
       (and title url (not body)) 'url
       (and title (not url) body) 'essay
-      :else 'unknown))))
+      :else 'unknown)))
 
-(defmethod show-edit-fields 'comment [item]    
+(defmulti show-edit-fields classify-item)
+
+(defn show-comment-field [item]
   (html
      [:div#editcommentlbl (label "comment-lbl" "Comment")]
      [:div#editcomment (text-area "comment" (item :body))]))
 
+(defn show-title-field [item]
+     [:div#edittitle (label "title-lbl" "Title")
+      (text-field "title" (item :title)) ])
+
+(defn show-url-field [item]
+   [:div#editurl (label "url-lbl" "URL")
+    (text-field "url" (item :url))])
+
+(defmethod show-edit-fields 'comment [item]    
+  (show-comment-field item))
+
 (defmethod show-edit-fields 'essay [item]
   (html
-   [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
-   [:div#editcommentlbl (label "comment-lbl" "Comment")]
-   [:div#editcomment (text-area "comment" (item :body))]))
+   (show-title-field item)
+   (show-comment-field item)))
 
 (defmethod show-edit-fields 'url [item]
   (html
-   [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title))]
+   (show-title-field item)
    [:div#editand [:p "and"]]
-   [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]))
+   (show-url-field item)))
 
 
 (defn show-edit-form [item]
@@ -125,33 +114,6 @@
      (hidden-field "parent-id" (:parent item))
      (show-edit-fields item)
      [:div#editbutton (submit-button "update")])))
-
-;; (defn show-edit-comment-form [item]
-;;   (html 
-;;    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
-;;      (hidden-field "parent-id" (:parent item))
-;;      [:div#editcommentlbl (label "comment-lbl" "Comment")]
-;;      [:div#editcomment (text-area "comment" (item :body))]
-;;      [:div#editbutton (submit-button "update")])))
-
-;; (defn show-edit-essay-form [item]
-;;   (html 
-;;    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
-;;      (hidden-field "parent-id" (:parent item))
-;;      [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title)) ]
-;;      [:div#editcommentlbl (label "comment-lbl" "Comment")]
-;;      [:div#editcomment (text-area "comment" (item :body))]
-;;      [:div#editbutton (submit-button "update")])))
-
-;; (defn show-edit-url-form [item]
-;;   (html
-;;    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
-;;      (hidden-field "parent-id" (:parent item))
-;;      [:div#edittitle (label "title-lbl" "Title") (text-field "title" (item :title))]
-;;      [:div#editand [:p "and"]]
-;;      [:div#editurl (label "url-lbl" "URL") (text-field "url" (item :url))]
-;;      [:div#editbuttonurl (submit-button "update")])))
-  
 
 (defn show-comment-form [item-id user & [edit]]
   (let [item (find-item item-id)]
@@ -234,16 +196,16 @@
 	 (when  (at-top? item)
 	   (show-comment-form (:id item) (:submitter item)))])) 
 
-(defn show-edit-form [item user auth]
-  (show-page  
-   (html 
-    [:div#submittitle (text-area "title" (:title item))]
-    (when (item :url) [:div#submiturl (text-area "url-edit-ta" (:url item))])
-    (if (:body item)
-      (html
-       [:p (:body item)]
-       (show-comment-form (:id item)
-			  user true))))))
+;; (defn show-edit-form [item user auth]
+;;   (show-page  
+;;    (html 
+;;     [:div#submittitle (text-area "title" (:title item))]
+;;     (when (item :url) [:div#submiturl (text-area "url-edit-ta" (:url item))])
+;;     (if (:body item)
+;;       (html
+;;        [:p (:body item)]
+;;        (show-comment-form (:id item)
+;; 			  user true))))))
 
 (defn derive-url [item]
   (if (or (nil? (:url item)) (= "" (:url item)))

@@ -15,7 +15,7 @@
   "Makes the session, params, headers and request hash globally available (via thread-specific bindings)."
   [& body]
   `(binding [*session* ~'session
-             *param* ~'params
+             *param* (clean-map ~'params)
              *request* ~'request
 	     *username* ~'(session :username)
 	     *auth* ~'(session :authenticated)
@@ -31,7 +31,7 @@
     (do (submit 
 	 (create-item (*param* :title)
 		      (*param* :url) 
-		      (convert-nl-to-br (*param* :comment)) *id* *user-key*))
+		      (*param* :comment) *id* *user-key*))
 	(if (= "" (*param* :parent-id))
 	  (redirect-to (str "/"))
 	  (redirect-to (str "/item/" *id*))))))
@@ -41,7 +41,7 @@
   (if (find-item *id*)
     (show-page (bf-format *auth* *user-key* *id*) 
 	       *auth* *user-key*)
-    [404 "page not found"]))
+    (redirect-to  "/")))
 
 (defn do-vote-cast [fdir]
   (if (do-vote *id* fdir *user-key*)
@@ -50,20 +50,31 @@
       [(redirect-to (format "/" *id*))])
     "Error"))
 
-; TODO: this is insanely ugly
-(defn edited-item [item]
-  (println "item:" item)
-  (let [new-title (if (*param* :title) (assoc item :title (*param* :title)) item)
-	new-url (if (*param* :url) (assoc new-title :url (*param* :url)) new-title)
-	new-body (if (*param* :comment) (assoc  new-url :body (*param* :comment)) new-url)]
-    (println "new item:" new-body)
-    new-body))
+;; ; TODO: this is insanely ugly
+;; (defn edited-item [item params]
+;;   (println "item:" item)
+;;   (let [new-title (if (params :title) (assoc item :title (params :title)) item)
+;; 	new-url (if (params :url) (assoc new-title :url (params :url)) new-title)
+;; 	new-body (if (params :comment) (assoc  new-url :body (params :comment)) new-url)]
+;;     (println "new item:" new-body)
+;;     new-body))
+
+
+
+;; (defn filter-map-vals [p m]
+;;   (into {}
+;; 	(filter (comp p second) m)))
+
+;; (def filter-nil-vals (partial filter-map-vals (comp not nil?)))
+
+(defn edited-item [item params]
+  (no-nil-vals item (select-vals params [:title :url :body])))
 
 (defn do-edit []
   (let [item (find-item *id*)]
     (if (= *user-key* (:submitter item))
-      (edit-item (edited-item item)))
-    (redirect-to (str "/item/" *id*))))
+      (do (edit-item (edited-item item *param*))
+	  (redirect-to (str "/item/" *id*))))))
 
 (defn do-front []
   (show-page (show-front) *auth* *user-key*))
@@ -134,14 +145,8 @@
 			*user-key*)))))
   (GET "/edit/:id"
     (par-bind
-      (let [item (find-item *id*)] ;TODO: god damn ugly
+      (let [item (find-item *id*)]
 	(show-page (show-edit-form item)
-	            ;; (cond (is-comment? item)
-;; 			 (show-edit-comment-form item)
-;; 			 (is-essay? item)
-;; 			 (show-edit-essay-form item)
-;; 			 (is-url? item)
-;; 			 (show-edit-url-form item))
 		   *auth* *user-key*))))
   (POST "/edit/:id"
     (par-bind
@@ -164,8 +169,8 @@
       [(session-assoc :authenticated 'false)
        (redirect-to "/")]))
 
-(decorate auth-routes  with-auth with-clean with-session)
-;(decorate auth-routes  with-auth with-session)
+;(decorate auth-routes  with-auth with-clean with-session)
+(decorate auth-routes  with-auth with-session)
 (decorate sess-routes  with-clean with-session )
 (decorate public-routes  with-session)
 

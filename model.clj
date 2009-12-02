@@ -113,6 +113,7 @@
 		:created (time-now)))))))
 
 (defn submit [item]
+;  (let [item (clean-map item)]
   (dosync 
    (if (get @user-list (:submitter item))
      (if (and (not= nil (:url item)) (submitted-before? (:url item)))
@@ -120,7 +121,7 @@
        (do (update-item-list item)
 	   (if (find-item (:parent item))
 	     (update-item-list (add-child (find-item (:parent item)) item)))
-	   (self-vote (:submitter item) (:id item)))))))
+	   (self-vote (:submitter item) (:id item))))))) ;)
 
 
 ;; Stateless operations on data
