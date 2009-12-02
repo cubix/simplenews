@@ -97,13 +97,13 @@
     (let [user (params :username)
 	  password (params :password)
 	  confirm (params :confirm)]
-      (if (and (> (count user) 2) (= password confirm) (> (count password) 5))
+      (if (and (> (count user) 2) (= password confirm) (> (count password) 4))
 	(do (add-user user password)
 	    (redirect-to "/"))
 	"Error")))
   (GET "/"
     (par-bind (do-front))))
-  
+
 (defroutes sess-routes
   (GET "/login"
     (show-page (show-login-form)))
@@ -113,7 +113,7 @@
 		       :username (params :username))) 
 	(redirect-to (if (nil? (session :nextpage)) "/" (session :nextpage)))]
       (show-page "login failed"))))
- 
+
 (defroutes auth-routes
   (GET "/reply/:id"
     (par-bind
@@ -130,20 +130,20 @@
     (par-bind
       (do-edit)))
   
-    (ANY "/comment/:id"
-      (par-bind (do-comment)))
-    (GET "/submit"
-      (par-bind
-	(show-page (show-submit-form (find-item *id*)) *auth* *user-key*)))
-    (GET "/up-vote/:id"
-      (par-bind (do-vote-cast inc)))
-    (GET "/down-vote/:id"
-      (par-bind (do-vote-cast dec)))
-    (GET "/logout"
-      (show-page (form-to [:post "/logout"] 
-		   [:div [:p "Are you sure you want to logout?"]]
-		   [:div (submit-button "logout")])))
-    (POST "/logout"
+  (ANY "/comment/:id"
+    (par-bind (do-comment)))
+  (GET "/submit"
+    (par-bind
+      (show-page (show-submit-form (find-item *id*)) *auth* *user-key*)))
+  (GET "/up-vote/:id"
+    (par-bind (do-vote-cast inc)))
+  (GET "/down-vote/:id"
+    (par-bind (do-vote-cast dec)))
+  (GET "/logout"
+    (show-page (form-to [:post "/logout"] 
+		 [:div [:p "Are you sure you want to logout?"]]
+		 [:div (submit-button "logout")])))
+  (POST "/logout"
       [(session-assoc :authenticated 'false)
        (redirect-to "/")]))
 
