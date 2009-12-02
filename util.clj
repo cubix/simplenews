@@ -40,6 +40,13 @@
   (apply (partial merge-with #(or (nil-if-blank %2) (nil-if-blank %1))) maps))
 
 
+(defn filter-map-vals [p m]
+  (into {}
+	(filter (comp p second) m)))
+
+(def filter-nil-vals (partial filter-map-vals (comp not nil?)))
+
+
 (defn pluralize-noun [noun num & [special case]]
   (cond 
     (= case num)

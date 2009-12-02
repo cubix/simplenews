@@ -8,9 +8,6 @@
 
 (declare *session* *param* *request* *username* *auth* *id* *user-key*)
 
-(defn testweb []
-  (html [:p "My username is:" *username* " and I'm auth'd: " *auth* " id: " *id* "; " *param*]))
-
 (defmacro par-bind
   "Makes the session, params, headers and request hash globally available (via thread-specific bindings)."
   [& body]
@@ -49,23 +46,6 @@
       [(redirect-to (format "/item/%d" *id*))]
       [(redirect-to (format "/" *id*))])
     "Error"))
-
-;; ; TODO: this is insanely ugly
-;; (defn edited-item [item params]
-;;   (println "item:" item)
-;;   (let [new-title (if (params :title) (assoc item :title (params :title)) item)
-;; 	new-url (if (params :url) (assoc new-title :url (params :url)) new-title)
-;; 	new-body (if (params :comment) (assoc  new-url :body (params :comment)) new-url)]
-;;     (println "new item:" new-body)
-;;     new-body))
-
-
-
-;; (defn filter-map-vals [p m]
-;;   (into {}
-;; 	(filter (comp p second) m)))
-
-;; (def filter-nil-vals (partial filter-map-vals (comp not nil?)))
 
 (defn edited-item [item params]
   (no-nil-vals item (select-vals params [:title :url :body])))
@@ -135,8 +115,6 @@
       (show-page "login failed"))))
  
 (defroutes auth-routes
-  (GET "/test/:id"
-    (par-bind (testweb)))
   (GET "/reply/:id"
     (par-bind
       (show-page (html (show-item *auth* *user-key* (find-item *id*))
@@ -169,8 +147,8 @@
       [(session-assoc :authenticated 'false)
        (redirect-to "/")]))
 
-;(decorate auth-routes  with-auth with-clean with-session)
-(decorate auth-routes  with-auth with-session)
+(decorate auth-routes  with-auth with-clean with-session)
+;(decorate auth-routes  with-auth with-session)
 (decorate sess-routes  with-clean with-session )
 (decorate public-routes  with-session)
 
