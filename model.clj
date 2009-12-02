@@ -5,12 +5,19 @@
 
 ;; Define structs
 
-(defstruct news-item :id :timestamp :title :url :votes :body :children :parent :submitter)
+(defstruct news-item :id :timestamp :title :url :votes :body :children :parent :submitter :tag)
 (defstruct user :username :password :karma :created)
+
+(defn classify-item [title url body]
+    (cond  
+      (and (not title) (not url) body) ::Comment
+      (and title url (not body)) ::Url
+      (and title (not url) body) ::Essay
+      :else ::Unknown))
 
 ;; References for stateful data
 
-(def item-list (ref { 0 (struct news-item 0 (time-now) *site-name* "/" 0 nil [] nil :cubix)}))
+(def item-list (ref { 0 (struct news-item 0 (time-now) *site-name* "/" 0 nil [] nil :cubix ::Url)}))
 (def user-list (ref { :admin (struct user :admin "password" 0 0)}))
 (def vote-list (ref {}))
 (def item-counter (ref 0))
@@ -44,6 +51,7 @@
 
 (defn user-owns-item? [item user-id]
   (= (:submitter item) user-id))
+
 
 ;; Stateless modifications to individual items
 
@@ -83,7 +91,7 @@
 					;(if (empty? url)
 		  ;  (str "/item/" @item-counter) 
 		   ; url)
-		  1 body nil parent-id user)))
+		  1 body nil parent-id user (classify-item title url body))))
 
 (defn do-vote [item-id dir vote-user]
   (dosync 

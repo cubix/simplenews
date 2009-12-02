@@ -3,6 +3,8 @@
     (:use simplenews.model)
     (:use compojure))
     
+(alias 'model 'simplenews.model)
+
 (defn styles
   "Return HTML to include CSS stylesheets."
   [& styles]
@@ -65,20 +67,7 @@
      [:div#submitbutton (submit-button "add")])))
 
 
-
-
-
-(defn classify-item [item]
-  (let [title  (:title item)
-	body (:body item)
-	url (:url item)]
-    (cond  
-      (and (not title) (not url) body) 'comment
-      (and title url (not body)) 'url
-      (and title (not url) body) 'essay
-      :else 'unknown)))
-
-(defmulti show-edit-fields classify-item)
+(defmulti show-edit-fields :tag)
 
 (defn show-comment-field [item]
   (html
@@ -93,15 +82,15 @@
    [:div#editurl (label "url-lbl" "URL")
     (text-field "url" (item :url))])
 
-(defmethod show-edit-fields 'comment [item]    
+(defmethod show-edit-fields ::model/Comment [item]    
   (show-comment-field item))
 
-(defmethod show-edit-fields 'essay [item]
+(defmethod show-edit-fields ::model/Essay [item]
   (html
    (show-title-field item)
    (show-comment-field item)))
 
-(defmethod show-edit-fields 'url [item]
+(defmethod show-edit-fields ::model/Url [item]
   (html
    (show-title-field item)
    [:div#editand [:p "and"]]

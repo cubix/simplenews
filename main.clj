@@ -20,6 +20,8 @@
 	     *id* (if ~'(params :id) (Integer/parseInt ~'(params :id)))]
      ~@body))
 
+
+
 (defn do-comment []
   (if  (and (is-blank? (*param* :comment))
 	    (is-blank? (*param* :url))
@@ -52,9 +54,9 @@
 
 (defn do-edit []
   (let [item (find-item *id*)]
-    (if (= *user-key* (:submitter item))
-      (do (edit-item (edited-item item *param*))
-	  (redirect-to (str "/item/" *id*))))))
+    (when (= *user-key* (:submitter item))
+      (edit-item (edited-item item *param*))
+      (redirect-to (str "/item/" *id*)))))
 
 (defn do-front []
   (show-page (show-front) *auth* *user-key*))
