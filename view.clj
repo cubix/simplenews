@@ -23,7 +23,7 @@
     [:html
       [:head
        (styles 'simplenews )
-       [:script {:src "http://www.google.com/jsapi"}]
+       ;[:script {:src "http://www.google.com/jsapi"}]
        (scripts 'encode-form)
         ;(javascript-tag "SyntaxHighlighter.all({light: true});")
         [:title (:title (find-item 0))]]
@@ -72,7 +72,7 @@
 (defn show-comment-field [item]
   (html
      [:div#editcommentlbl (label "comment-lbl" "Comment")]
-     [:div#editcomment (text-area "comment" (item :body))]))
+     [:div#editcomment (text-area "body" (item :body))]))
 
 (defn show-title-field [item]
      [:div#edittitle (label "title-lbl" "Title")
@@ -118,11 +118,12 @@
 
 (defn show-user-form []
   (html
-   (form-to [:get (str "/submit-user")]
-     [:div (label "username-lbl" "Username") (text-field "username") ]
-     [:div (label "password-lbl" "Password") (password-field "password") ]
-     [:div (label "confirm-lbl" "Confirm") (password-field "confirm") ]
-     [:div (submit-button "submit") ])))
+     [:div#newuserform
+      (form-to [:post (str "/new-user")]
+	[:div (label "username-lbl" "Username") (text-field "username") ]
+	[:div (label "password-lbl" "Password") (password-field "password") ]
+	[:div (label "confirm-lbl" "Confirm") (password-field "confirm") ]
+	[:div (submit-button "submit")])]))
 
 (defn show-login-form []
   (html
@@ -173,15 +174,16 @@
 	     (html "| "  [:a {:href (str "/item/" (:parent item))} "parent"])) ]
       [:td (when (not (at-top? item))
 	     (html "| " [:a {:href (str "/item/" (:id item))} "reply"]))]
-      [:td (when (user-owns-item? item user-id)
-	     (html "| " [:a {:href (str "/edit/" (:id item))} "edit"]))]]]]))
+      [:td (when (and (user-owns-item? item user-id) (not-frozen? item))
+	     (html "| " [:a {:href (str "/edit/" (:id item))} "edit"]
+	     " | " [:a {:href (str "/delete/" (:id item))} "delete"]))]]]]))
 
 (defn show-item [auth user-id item]
   (html [:div {:class (indent-class item)}
 	 (gen-comment-bar item auth user-id)
 	 (when (:url item)
 	   [:p.itemtitle [:a {:href (:url item)} (:title item) ]])
-	   [:p (:body item)]
+	   [:p (if (= ::model/Deleted (:tag item)) "[DELETED]" (:body item))]
 	 (when  (at-top? item)
 	   (show-comment-form (:id item) (:submitter item)))])) 
 
@@ -203,27 +205,25 @@
 
 	
 
-(defn show-front []
+(defn show-front [items]
   (html [:table 
-	 (let [items (order-items 
-		      (map find-item (:children (find-item 0))))]
-	   (map (fn [item]
-		  (html [:tr
-			 [:td.enum (str (:enumeration item) ".")]
-			   [:td
-			    [:div 
-			     [:a {:href (str "/up-vote/" (:id item))} 
-			      [:img.updown {:src "/images/uparrow.gif"}]]]
-			    [:div 
-			     [:a {:href (str "/down-vote/" (:id item))}
-			      [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
-			   [:td.itemtitle [:a {:href (derive-url item)} (:title item) ]] "\n"]
-			[:tr
-			 [:td]
-			 [:td]
-			 [:td.header
-			  (gen-status-line item)] "\n"]
-			[:tr])) items))]))
+	 (map (fn [item]
+		(html [:tr
+		       [:td.enum (str (:enumeration item) ".")]
+		       [:td
+			[:div 
+			 [:a {:href (str "/up-vote/" (:id item))} 
+			  [:img.updown {:src "/images/uparrow.gif"}]]]
+			[:div 
+			 [:a {:href (str "/down-vote/" (:id item))}
+			  [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
+		       [:td.header [:a {:href (derive-url item)} [:p.front-title (:title item) ]]] "\n"]
+		      [:tr
+		       [:td]
+		       [:td]
+		       [:td.header
+			(gen-status-line item)] "\n"]
+		      [:tr])) items) ]))
 
 
 (defn bf-format [auth user node-id]

@@ -18,22 +18,22 @@
 	     *auth* ~'(session :authenticated)
 	     *user-key* (if ~'(session :username) (keyword ~'(session :username)))
 	     *id* (if ~'(params :id) (Integer/parseInt ~'(params :id)))]
+	     ;*parent-id* (if (= "" ~'(params :parent-id)) 0 (Integer/parseInt ~'(params :parent-id)))]
      ~@body))
-
+ 
 
 
 (defn do-comment []
-  (if  (and (is-blank? (*param* :comment))
-	    (is-blank? (*param* :url))
-	    (is-blank? (*param* :title)))
-    (redirect-to (str "/reply/" (*param* :parent-id)))
-    (do (submit 
-	 (create-item (*param* :title)
-		      (*param* :url) 
-		      (*param* :comment) *id* *user-key*))
-	(if (= "" (*param* :parent-id))
-	  (redirect-to (str "/"))
-	  (redirect-to (str "/item/" *id*))))))
+    (cond
+	(and (*param* :title) (*param* :url))
+	 (submit (create-item (*param* :title) (*param* :url) nil *id* *user-key*))
+	(and (*param* :title) (*param* :comment))
+	 (submit (create-item (*param* :title) nil (*param* :comment) *id* *user-key*))
+	(not (is-blank? (*param* :comment)))
+	 (submit (create-item nil nil (*param* :comment) *id* *user-key*))
+	:else
+	 "Error")
+      (redirect-to (str "/item/" *id*)))
 
 
 (defn do-item []
@@ -52,6 +52,15 @@
 (defn edited-item [item params]
   (no-nil-vals item (select-vals params [:title :url :body])))
 
+(defn do-new-user []
+  (let [user (*param* :username)
+	password (*param* :password)
+	confirm (*param* :confirm)]
+    (if (and (> (count user) 2) (= password confirm) (> (count password) 4))
+      (do (add-user user password)
+	  (redirect-to "/"))
+	"Error")))
+
 (defn do-edit []
   (let [item (find-item *id*)]
     (when (= *user-key* (:submitter item))
@@ -59,7 +68,14 @@
       (redirect-to (str "/item/" *id*)))))
 
 (defn do-front []
-  (show-page (show-front) *auth* *user-key*))
+  (show-page (show-front (order-items 
+			  (map find-item (:children (find-item 0))))) 
+	     *auth* *user-key*))
+
+(defn do-delete []
+  (let [item (assoc-in (find-item *id*) [:tag] ::simplenews.model/Deleted)]
+    (if (= *user-key* (:submitter item))
+      (edit-item item))))
 
 (defn with-clean [& route-seq]
   (fn [request]
@@ -95,14 +111,8 @@
     (par-bind (do-item)))
   (GET "/new-user"
     (show-page (show-user-form)))
-  (GET "/submit-user"
-    (let [user (params :username)
-	  password (params :password)
-	  confirm (params :confirm)]
-      (if (and (> (count user) 2) (= password confirm) (> (count password) 4))
-	(do (add-user user password)
-	    (redirect-to "/"))
-	"Error")))
+  (POST "/new-user"
+    (par-bind (do-new-user)))
   (GET "/"
     (par-bind (do-front))))
 
@@ -131,7 +141,8 @@
   (POST "/edit/:id"
     (par-bind
       (do-edit)))
-  
+  (GET "/delete/:id"
+    (par-bind (do-delete)))
   (ANY "/comment/:id"
     (par-bind (do-comment)))
   (GET "/submit"
@@ -152,7 +163,7 @@
 (decorate auth-routes  with-auth with-clean with-session)
 ;(decorate auth-routes  with-auth with-session)
 (decorate sess-routes  with-clean with-session )
-(decorate public-routes  with-session)
+(decorate public-routes with-clean with-session)
 
 (defroutes all-routes
   public-routes

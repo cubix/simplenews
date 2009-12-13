@@ -2,7 +2,7 @@
   (:import [java.io StringBufferInputStream])
   (:import [org.owasp.validator.html Policy AntiSamy CleanResults]))
 
-(def *input-policy* (Policy/getInstance "antisamy-slashdot-1.3.xml"))
+(def *input-policy* (Policy/getInstance "/Users/cubix/code/antisamy-slashdot-1.3.xml"))
 (def *antisamy* (new AntiSamy))
 
 (defn clean-input [input-str]
