@@ -50,14 +50,10 @@ a:visited {
     font-size:x-small;
     color: #666;
     position: relative;
-    left: 0cm;
-    top: 0px;
+    left: 0px;
+    top: -5px;
 }
-.enum {
-    font-family: Verdana, Geneva, sans-serif;
-    font-size:smaller;
-    color: #666;
-}
+
 h1 {
     color: #000;
     font-size:2.5em;
@@ -74,60 +70,71 @@ h2 {font-size:1.875em}
     left: 0cm;
 }
 .level1 {
-	position: relative;
-	left: 1cm;
-	font-family: Verdana, Geneva, sans-serif;
+    position: relative;
+    left: 1cm;
+    min-height:80px;
+    font-family: Verdana, Geneva, sans-serif;
 }
 .level2 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 2cm;
 	position: relative;
+        min-height:80px;
 	border-bottom-stye: none;
 }
 .level3 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 4cm;
+	left: 3cm;
+        min-height:80px;
 	position: relative;
 }
 .level4 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 6cm;
+	left: 4cm;
+        min-height:80px;
 	position: relative;
 }
 
 .level5 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 8cm;
+	left: 5cm;
+        min-height:80px;
 	position: relative;
 }
 .level6 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 10cm;
+	left: 6cm;
+        min-height:80px;
 	position: relative;
 }
 .level7 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 12cm;
+	left: 7cm;
+        min-height:80px;
 	position: relative;
 }
 .level8 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 14cm;
+	left: 8cm;
+        min-height:80px;
 	position: relative;
 }
 .level9 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 16cm;
+	left: 9cm;
+        min-height:80px;
 	position: relative;
 }
 .level10 {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 18cm;
+	left: 10cm;
+        min-height:80px;
 	position: relative;
 }
 .levelmax {
 	font-family: Verdana, Geneva, sans-serif;
-	left: 20cm;
+	left: 11cm;
+        min-height:80px;
 	position: relative;
 }
 #submittitle {
@@ -216,12 +223,15 @@ h2 {font-size:1.875em}
 }
 
 .navigator {
-	font-family: Verdana, Geneva, sans-serif;
-	font-size: large;
-	border: thin inset #006;
-	color: #CCC;
-	background-color: #000;
-	padding: 5px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: large;
+    border: thin inset #006;
+    color: #CCC;
+    background-color: #000;
+    max-width: 800px;
+    padding: 5px;
+    position: relative;
+    left: 25px;
 }
 .tab {
 	padding: 4px;
@@ -235,10 +245,14 @@ label {
     font-size:0.875em;
     font-family: Verdana, Geneva, sans-serif;
 }
+
 #comment-in {
     width: 500px;
     height: 200px;
+    position:relative;
+    left:5px;
 }
+
 #comment {
     width: 500px;
     height: 200px;
@@ -246,6 +260,52 @@ label {
 #body {
     width: 500px;
     height: 200px;
+}
+.frontitem {
+    position: relative;
+    left: 0px;
+    height: 40px;
+}
+.enum {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size:1em;
+    color: #666;
+    position: absolute;
+    top: 7px;
+}
+.votebuttons {
+    position: absolute;
+    left: 30px;
+    top: 0px;
+}
+
+.front-title-text {
+    font-size:1em;
+    font-family: Verdana, Geneva, sans-serif;
+    color: black;
+}
+
+.fronttitle {
+    position: absolute;
+    left: 44px;
+    top: -10px;
+}
+.statusline {
+    position: absolute;
+    font-size:0.4em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 44px;
+    top: 25px;
+}
+
+.outerbox {
+    background-color: #EBECE4;
+    min-height: 425px;
+    max-width: 800px;
+    padding: 5px;
+    position: relative;
+    left: 25px;
+
 }
 #newuserform {
     position: absolute;
@@ -258,4 +318,53 @@ label {
     color: #CCC;
     background-color: #000;
     padding: 5px;
+}
+
+/* 
+ * .votes {
+ *     position:relative;
+ *     width:100px;
+ *     top:0px;
+ *     left:0px;
+ * }
+ * .parent {
+ *     position:absolute;
+ *     top:0px;
+ * }
+ * 
+ * .points {
+ *     position:absolute;
+ *     top:-5px;
+ *     left:15px;
+ * }
+ * .reply {
+ *     position:absolute;
+ *     top:0px;
+ *     left:50px;
+ * }
+ * .edit {
+ *     position:absolute;
+ *     top:0px;
+ *     left:300px;
+ * }
+ * .delete {
+ *     position:absolute;
+ *     top:0px;
+ *     left:100px;
+ * }
+ */
+.parent {
+    padding: 3px;
+}
+.points {
+    padding: 3px;
+}
+.edit {
+    padding: 3px;
+}
+.reply {
+    padding: 3px;
+}
+.delete {
+    padding: 3px;
 }

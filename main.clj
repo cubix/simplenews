@@ -68,14 +68,19 @@
       (redirect-to (str "/item/" *id*)))))
 
 (defn do-front []
-  (show-page (show-front (order-items 
-			  (map find-item (:children (find-item 0))))) 
+  (show-page (show-front
+	      (take 30 (order-items 
+			(filter #(or (= (:tag %) ::simplenews.model/Url)
+				     (= (:tag %) ::simplenews.model/Essay))
+				(map find-item 
+				     (:children (find-item 0)))))))
 	     *auth* *user-key*))
 
 (defn do-delete []
   (let [item (assoc-in (find-item *id*) [:tag] ::simplenews.model/Deleted)]
-    (if (= *user-key* (:submitter item))
-      (edit-item item))))
+    (when (or (= *user-key* (:submitter item)) (moderator? *user-key*))
+      (edit-item item)
+      (redirect-to (derive-url item)))))
 
 (defn with-clean [& route-seq]
   (fn [request]

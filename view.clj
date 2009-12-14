@@ -36,7 +36,7 @@
 		[:span.tab (str (name user-id) "(" (:karma (find-user user-id)) ")")]
 		)
 	  [:span.tab [:a {:href "/login"} "Login"]])]
-	page]]))
+	[:div.outerbox page]]]))
 
 (defn show-submit-form [item & edit]
   (html
@@ -107,14 +107,14 @@
 (defn show-comment-form [item-id user & [edit]]
   (let [item (find-item item-id)]
     (html
-     (form-to [:post (str (if edit "/edit/" "/comment/") item-id )] 
-       (hidden-field "parent-id" (:parent item))
-       (hidden-field "comment")
-       [:div (text-area "comment-in" (if edit (:body item) ""))]
-       [:div [:input {:type "submit"
-		      :name "submitcomment"
-		      :value (if edit "update" "add")
-		      :onClick "document.getElementById('comment').value = escapeVal(document.getElementById('comment-in').value)"}]]))))
+      (form-to [:post (str (if edit "/edit/" "/comment/") item-id )] 
+	(hidden-field "parent-id" (:parent item))
+	(hidden-field "comment")
+	[:div (text-area "comment-in" (if edit (:body item) ""))]
+	[:div [:input {:type "submit"
+		       :name "submitcomment"
+		       :value (if edit "update" "add")
+		       :onClick "document.getElementById('comment').value = escapeVal(document.getElementById('comment-in').value)"}]]))))
 
 (defn show-user-form []
   (html
@@ -154,36 +154,53 @@
 (defn at-top? [item]
   (= (:level item) 0))
 
-(defn gen-vote-buttons [item]
-  (html
-   [:table
-    [:tr [:td [:a {:href (str "/up-vote/" (:id item)) } 
-	       [:img.updown {:src "/images/uparrow.gif"}]]]] 
-    [:tr [:td [:a {:href (str "/down-vote/" (:id item)) }
-	       [:img.updown {:src "/images/downarrow.gif"}]]]]]))
+;; (defn gen-vote-buttons [item]
+;;   (html
+;;    [:table
+;;     [:tr [:td [:a {:href (str "/up-vote/" (:id item)) } 
+;; 	       [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]] 
+;;     [:tr [:td [:a {:href (str "/down-vote/" (:id item)) }
+;; 	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]]]))
+
+;; (defn gen-comment-bar [item auth user-id]
+;;   (html 
+;;    [:div.header 
+;;     [:table
+;;      [:tr 
+;;       [:td (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
+;; 	    (gen-vote-buttons item)) ]
+;;       [:td (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago"] 
+;;       [:td (when (at-top? item)
+;; 	     (html "| "  [:a {:href (str "/item/" (:parent item))} "parent"])) ]
+;;       [:td (when (not (at-top? item))
+;; 	     (html "| " [:a {:href (str "/item/" (:id item))} "reply"]))]
+;;       [:td (when (and (user-owns-item? item user-id) (not-frozen? item))
+;; 	     (html "| " [:a {:href (str "/edit/" (:id item))} "edit"]))]
+;;       [:td (when (or (and (user-owns-item? item user-id) (not-frozen? item)) (moderator? user-id))
+;; 	     (html " | " [:a {:href (str "/delete/" (:id item))} "delete"]))]]]]))
 
 (defn gen-comment-bar [item auth user-id]
   (html 
    [:div.header 
-    [:table
-     [:tr 
-      [:td (when (not (voted? user-id (:id item)))
-	    (gen-vote-buttons item)) ]
-      [:td (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago"] 
-      [:td (when (at-top? item)
-	     (html "| "  [:a {:href (str "/item/" (:parent item))} "parent"])) ]
-      [:td (when (not (at-top? item))
-	     (html "| " [:a {:href (str "/item/" (:id item))} "reply"]))]
-      [:td (when (and (user-owns-item? item user-id) (not-frozen? item))
-	     (html "| " [:a {:href (str "/edit/" (:id item))} "edit"]
-	     " | " [:a {:href (str "/delete/" (:id item))} "delete"]))]]]]))
+    [:span.votes (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
+		  (gen-vote-buttons item)) ]
+    [:span.points (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago"]
+    (when (at-top? item)
+      [:span.parent [:a {:href (str "/item/" (:parent item))} "parent"]])
+    (when (not (at-top? item))
+      [:span.reply  [:a {:href (str "/item/" (:id item))} "reply"]])
+    (when (and (user-owns-item? item user-id) (not-frozen? item))
+      [:span.edit [:a {:href (str "/edit/" (:id item))} "edit"]])
+    (when (or (and (user-owns-item? item user-id) (not-frozen? item)) (moderator? user-id))
+      [:span.delete [:a {:href (str "/delete/" (:id item))} "delete"]])]))
+
 
 (defn show-item [auth user-id item]
   (html [:div {:class (indent-class item)}
 	 (gen-comment-bar item auth user-id)
-	 (when (:url item)
+	 (when (or (= ::model/Url (:tag item)) (= ::model/Essay (:tag item)))
 	   [:p.itemtitle [:a {:href (:url item)} (:title item) ]])
-	   [:p (if (= ::model/Deleted (:tag item)) "[DELETED]" (:body item))]
+	 (if (deleted? item) [:p.deleted "[deleted]"] (:body item))
 	 (when  (at-top? item)
 	   (show-comment-form (:id item) (:submitter item)))])) 
 
@@ -203,27 +220,44 @@
     (str "/item/" (:id item))
     (:url item)))
 
-	
+(defn gen-vote-buttons [item]
+   (html 
+    [:div.up [:a {:href (str "/up-vote/" (:id item)) :id (str "up_" (:id item))} 
+	       [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]
+    [:div.down [:a {:href (str "/down-vote/" (:id item)) :id (str "down_" (:id item)) } 
+	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]))
+   
+(defn gen-title-link [item]
+  [:a {:href (derive-url item)} [:p.front-title-text (:title item) ]])
 
 (defn show-front [items]
-  (html [:table 
-	 (map (fn [item]
-		(html [:tr
-		       [:td.enum (str (:enumeration item) ".")]
-		       [:td
-			[:div 
-			 [:a {:href (str "/up-vote/" (:id item))} 
-			  [:img.updown {:src "/images/uparrow.gif"}]]]
-			[:div 
-			 [:a {:href (str "/down-vote/" (:id item))}
-			  [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
-		       [:td.header [:a {:href (derive-url item)} [:p.front-title (:title item) ]]] "\n"]
-		      [:tr
-		       [:td]
-		       [:td]
-		       [:td.header
-			(gen-status-line item)] "\n"]
-		      [:tr])) items) ]))
+  (html (map (fn [item]
+	       [:div.frontitem
+		[:span.enum (str (:enumeration item) ".")]
+		[:span.votebuttons (gen-vote-buttons item)]
+		[:span.fronttitle (gen-title-link item)]
+		[:span.statusline (gen-status-line item)]])
+	     items)))
+
+;; (defn show-front [items]
+;;   (html [:table 
+;; 	 (map (fn [item]
+;; 		(html [:tr
+;; 		       [:td.enum (str (:enumeration item) ".")]
+;; 		       [:td
+;; 			[:div 
+;; 			 [:a {:href (str "/up-vote/" (:id item))} 
+;; 			  [:img.updown {:src "/images/uparrow.gif"}]]]
+;; 			[:div 
+;; 			 [:a {:href (str "/down-vote/" (:id item))}
+;; 			  [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
+;; 		       [:td.header [:a {:href (derive-url item)} [:p.front-title (:title item) ]]] "\n"]
+;; 		      [:tr
+;; 		       [:td]
+;; 		       [:td]
+;; 		       [:td.header
+;; 			(gen-status-line item)] "\n"]
+;; 		      [:tr])) items) ]))
 
 
 (defn bf-format [auth user node-id]

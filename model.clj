@@ -18,7 +18,7 @@
 ;; References for stateful data
 
 (def item-list (ref { 0 (struct news-item 0 (time-now) *site-name* "/" 0 nil [] nil :cubix ::Url)}))
-(def user-list (ref { :admin (struct user :admin "password" 0 (time-now) [:admin :moderator])}))
+(def user-list (ref { :admin (struct user :admin "password" 0 (time-now) [:admin :moderator] "admin@example.com")}))
 (def vote-list (ref {}))
 (def item-counter (ref 0))
 
@@ -35,6 +35,10 @@
 
 (defn get-user-list []
   @user-list)
+
+(defn get-item-list []
+  @item-list)
+
 
 ;; Queries
 
@@ -61,6 +65,9 @@
 
 (defn has-children? [item]
   (:children item))
+
+(defn moderator? [user-id]
+  (some #(= :moderator %) (:roles (find-user user-id))))
 
 ;; Stateless modifications to individual items
 
@@ -148,7 +155,7 @@
    (let [item (find-item item-id)
 	 parent-item (find-item (:parent item))]
      (when (not (has-children? item))
-       (ref-set item-list (dissoc @item-list item-id item))
+       (ref-set item-list (dissoc (get-item-list) item-id item))
        (update-item-list (remove-child parent-item item-id))))))
 
 ;; Stateless operations on data

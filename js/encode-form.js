@@ -1,6 +1,4 @@
-google.load("jquery", "1.3.2");
-
-
+//google.load("jquery", "1.3.2");
 
 function escapeVal(strIn)
 {
