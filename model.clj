@@ -82,6 +82,12 @@
 (defn add-vote [votes item-id]
   (assoc-in votes [item-id] 1))
 
+(defn remove-child [parent-item child-id]
+  (mod-prop parent-item :children  
+	    (fn [children] 
+	      (vec (filter #(not= % child-id) 
+			   children)))))
+
 ;; Alter functions
 
 (defn update-user-list [user]
@@ -134,21 +140,14 @@
 		:email email))))))
 
 (defn submit [item]
-;  (let [item (clean-map item)]
   (dosync 
-   (if (get @user-list (:submitter item))
+   (if (find-user (:submitter item))
      (if (and (not= nil (:url item)) (submitted-before? (:url item)))
        (do-vote (:id item) inc (:submitter item))
        (do (update-item-list item)
 	   (if (find-item (:parent item))
 	     (update-item-list (add-child (find-item (:parent item)) item)))
-	   (self-vote (:submitter item) (:id item))))))) ;)
-
-(defn remove-child [parent-item child-id]
-  (mod-prop parent-item :children  
-	    (fn [children] 
-	      (vec (filter #(not= % child-id) 
-			   children)))))
+	   (self-vote (:submitter item) (:id item)))))))
 
 (defn hard-delete-item [item-id]
   (dosync
