@@ -4,7 +4,6 @@
 }
 .updown {
     border: 0;
-    pading-top: 0;
 }
 a {
     color: #666;
@@ -68,25 +67,29 @@ h2 {font-size:1.875em}
 .level0 {
     font-family: Verdana, Geneva, sans-serif;
     left: 0cm;
+    padding: 15px;
 }
 .level1 {
     position: relative;
     left: 1cm;
     min-height:80px;
     font-family: Verdana, Geneva, sans-serif;
+    padding: 15px;
 }
 .level2 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 2cm;
-	position: relative;
-        min-height:80px;
-	border-bottom-stye: none;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 2cm;
+    position: relative;
+    min-height:70px;
+    border-bottom-stye: none
+    padding: 15px;
 }
 .level3 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 3cm;
-        min-height:80px;
-	position: relative;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 3cm;
+    min-height:70px;
+    position: relative;
+    paddign: 15px;
 }
 .level4 {
 	font-family: Verdana, Geneva, sans-serif;
@@ -353,11 +356,18 @@ label {
  *     left:100px;
  * }
  */
+.votes {
+    position:absolute;
+    padding: 3px;
+    top:-7px;
+    left:-18px;
+}
 .parent {
     padding: 3px;
+
 }
 .points {
-    padding: 3px;
+    padding: 0px;
 }
 .edit {
     padding: 3px;

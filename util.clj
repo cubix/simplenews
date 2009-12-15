@@ -1,4 +1,5 @@
 (ns simplenews.util
+  (:require [clojure.contrib.str-utils2 :as s])
   (:import [java.io StringBufferInputStream])
   (:import [org.owasp.validator.html Policy AntiSamy CleanResults]))
 
@@ -76,3 +77,7 @@
 	 (map #(if (= \newline %) 
 		 "<br/>" %) 
 	      str-in)))
+
+(defn convert-br-to-nl [str-in]
+  (s/replace str-in #"<\s*(:?br|BR)\s*\/{0,1}\s*>(:?\n\s*){0,1}" "\n"))
+      

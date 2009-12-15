@@ -38,22 +38,6 @@
 	  [:span.tab [:a {:href "/login"} "Login"]])]
 	[:div.outerbox page]]]))
 
-(defn show-submit-form [item & edit]
-  (html
-   (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
-     (hidden-field "parent-id" (:parent item))
-     (if (or (not edit)  (:url item))
-       (html
-	[:div#submittitle (label "title-lbl" "Title") (text-field "title" (if edit (:title item))) ]
-	[:div#submitand [:p "and"]]
-	[:div#submiturl (label "url-lbl" "URL") (text-field "url" (if edit (:url item)))]))
-     (if (or (not edit) (not (:url item)))
-       (html 
-	(when (not edit) [:div#submitor [:p "or"]])
-	[:div#submitcommentlbl (label "comment-lbl" "Comment")]
-	[:div#submitcomment (text-area "comment" (if edit (:body item)))]))
-     [:div#submitbutton (submit-button (if edit "update" "add"))])))
-
 (defn show-submit-form [item]
   (html
    (form-to [:post (str "/comment/" (if (:id item) (:id item) 0))]
@@ -67,12 +51,11 @@
      [:div#submitbutton (submit-button "add")])))
 
 
-(defmulti show-edit-fields :tag)
-
 (defn show-comment-field [item]
   (html
-     [:div#editcommentlbl (label "comment-lbl" "Comment")]
-     [:div#editcomment (text-area "body" (item :body))]))
+   (hidden-field "body")
+   [:div#editcommentlbl (label "comment-lbl" "Comment")]
+   [:div#editcomment (text-area "comment-in" (convert-br-to-nl (item :body)))]))
 
 (defn show-title-field [item]
      [:div#edittitle (label "title-lbl" "Title")
@@ -81,6 +64,8 @@
 (defn show-url-field [item]
    [:div#editurl (label "url-lbl" "URL")
     (text-field "url" (item :url))])
+
+(defmulti show-edit-fields :tag)
 
 (defmethod show-edit-fields ::model/Comment [item]    
   (show-comment-field item))
@@ -96,13 +81,19 @@
    [:div#editand [:p "and"]]
    (show-url-field item)))
 
+(defn show-edit-submit [item]
+  [:div#editbutton [:input {:type "submit"
+			    :name "submitcomment"
+			    :value "update"
+			    :onClick (str "document.getElementById('body').value = "
+					  "escapeVal(document.getElementById('comment-in').value)")}]])
 
 (defn show-edit-form [item]
   (html 
    (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
      (hidden-field "parent-id" (:parent item))
      (show-edit-fields item)
-     [:div#editbutton (submit-button "update")])))
+     (show-edit-submit item))))
 
 (defn show-comment-form [item-id user & [edit]]
   (let [item (find-item item-id)]
@@ -114,7 +105,8 @@
 	[:div [:input {:type "submit"
 		       :name "submitcomment"
 		       :value (if edit "update" "add")
-		       :onClick "document.getElementById('comment').value = escapeVal(document.getElementById('comment-in').value)"}]]))))
+		       :onClick (str "document.getElementById('comment').value = "
+				     "escapeVal(document.getElementById('comment-in').value)")}]]))))
 
 (defn show-user-form []
   (html
@@ -154,44 +146,31 @@
 (defn at-top? [item]
   (= (:level item) 0))
 
-;; (defn gen-vote-buttons [item]
-;;   (html
-;;    [:table
-;;     [:tr [:td [:a {:href (str "/up-vote/" (:id item)) } 
-;; 	       [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]] 
-;;     [:tr [:td [:a {:href (str "/down-vote/" (:id item)) }
-;; 	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]]]))
 
-;; (defn gen-comment-bar [item auth user-id]
-;;   (html 
-;;    [:div.header 
-;;     [:table
-;;      [:tr 
-;;       [:td (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
-;; 	    (gen-vote-buttons item)) ]
-;;       [:td (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago"] 
-;;       [:td (when (at-top? item)
-;; 	     (html "| "  [:a {:href (str "/item/" (:parent item))} "parent"])) ]
-;;       [:td (when (not (at-top? item))
-;; 	     (html "| " [:a {:href (str "/item/" (:id item))} "reply"]))]
-;;       [:td (when (and (user-owns-item? item user-id) (not-frozen? item))
-;; 	     (html "| " [:a {:href (str "/edit/" (:id item))} "edit"]))]
-;;       [:td (when (or (and (user-owns-item? item user-id) (not-frozen? item)) (moderator? user-id))
-;; 	     (html " | " [:a {:href (str "/delete/" (:id item))} "delete"]))]]]]))
+(defn gen-vote-buttons [item]
+   (html 
+    [:div.up [:a {:href (str "/up-vote/" (:id item)) :id (str "up_" (:id item))} 
+	       [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]
+    [:div.down [:a {:href (str "/down-vote/" (:id item)) :id (str "down_" (:id item)) } 
+	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]))
+
 
 (defn gen-comment-bar [item auth user-id]
   (html 
    [:div.header 
     [:span.votes (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
 		  (gen-vote-buttons item)) ]
-    [:span.points (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago"]
+    [:span.points (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago |"]
     (when (at-top? item)
       [:span.parent [:a {:href (str "/item/" (:parent item))} "parent"]])
     (when (not (at-top? item))
       [:span.reply  [:a {:href (str "/item/" (:id item))} "reply"]])
     (when (and (user-owns-item? item user-id) (not-frozen? item))
       [:span.edit [:a {:href (str "/edit/" (:id item))} "edit"]])
-    (when (or (and (user-owns-item? item user-id) (not-frozen? item)) (moderator? user-id))
+    (when (and (not (deleted? item)) 
+	       (or (and (user-owns-item? item user-id) 
+			(not-frozen? item)) 
+		   (moderator? user-id)))
       [:span.delete [:a {:href (str "/delete/" (:id item))} "delete"]])]))
 
 
@@ -204,28 +183,10 @@
 	 (when  (at-top? item)
 	   (show-comment-form (:id item) (:submitter item)))])) 
 
-;; (defn show-edit-form [item user auth]
-;;   (show-page  
-;;    (html 
-;;     [:div#submittitle (text-area "title" (:title item))]
-;;     (when (item :url) [:div#submiturl (text-area "url-edit-ta" (:url item))])
-;;     (if (:body item)
-;;       (html
-;;        [:p (:body item)]
-;;        (show-comment-form (:id item)
-;; 			  user true))))))
-
 (defn derive-url [item]
   (if (or (nil? (:url item)) (= "" (:url item)))
     (str "/item/" (:id item))
     (:url item)))
-
-(defn gen-vote-buttons [item]
-   (html 
-    [:div.up [:a {:href (str "/up-vote/" (:id item)) :id (str "up_" (:id item))} 
-	       [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]
-    [:div.down [:a {:href (str "/down-vote/" (:id item)) :id (str "down_" (:id item)) } 
-	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]))
    
 (defn gen-title-link [item]
   [:a {:href (derive-url item)} [:p.front-title-text (:title item) ]])
@@ -238,26 +199,6 @@
 		[:span.fronttitle (gen-title-link item)]
 		[:span.statusline (gen-status-line item)]])
 	     items)))
-
-;; (defn show-front [items]
-;;   (html [:table 
-;; 	 (map (fn [item]
-;; 		(html [:tr
-;; 		       [:td.enum (str (:enumeration item) ".")]
-;; 		       [:td
-;; 			[:div 
-;; 			 [:a {:href (str "/up-vote/" (:id item))} 
-;; 			  [:img.updown {:src "/images/uparrow.gif"}]]]
-;; 			[:div 
-;; 			 [:a {:href (str "/down-vote/" (:id item))}
-;; 			  [:img.updown {:src "/images/downarrow.gif"}]]] "\n"]
-;; 		       [:td.header [:a {:href (derive-url item)} [:p.front-title (:title item) ]]] "\n"]
-;; 		      [:tr
-;; 		       [:td]
-;; 		       [:td]
-;; 		       [:td.header
-;; 			(gen-status-line item)] "\n"]
-;; 		      [:tr])) items) ]))
 
 
 (defn bf-format [auth user node-id]
