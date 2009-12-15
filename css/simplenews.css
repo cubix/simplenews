@@ -72,7 +72,6 @@ h2 {font-size:1.875em}
 .level1 {
     position: relative;
     left: 1cm;
-    min-height:80px;
     font-family: Verdana, Geneva, sans-serif;
     padding: 15px;
 }
@@ -80,64 +79,54 @@ h2 {font-size:1.875em}
     font-family: Verdana, Geneva, sans-serif;
     left: 2cm;
     position: relative;
-    min-height:70px;
     border-bottom-stye: none
     padding: 15px;
 }
 .level3 {
     font-family: Verdana, Geneva, sans-serif;
     left: 3cm;
-    min-height:70px;
     position: relative;
     paddign: 15px;
 }
 .level4 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 4cm;
-        min-height:80px;
 	position: relative;
 }
 
 .level5 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 5cm;
-        min-height:80px;
 	position: relative;
 }
 .level6 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 6cm;
-        min-height:80px;
 	position: relative;
 }
 .level7 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 7cm;
-        min-height:80px;
 	position: relative;
 }
 .level8 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 8cm;
-        min-height:80px;
 	position: relative;
 }
 .level9 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 9cm;
-        min-height:80px;
 	position: relative;
 }
 .level10 {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 10cm;
-        min-height:80px;
 	position: relative;
 }
 .levelmax {
 	font-family: Verdana, Geneva, sans-serif;
 	left: 11cm;
-        min-height:80px;
 	position: relative;
 }
 #submittitle {

@@ -24,7 +24,7 @@
       [:head
        (styles 'simplenews )
        ;[:script {:src "http://www.google.com/jsapi"}]
-       (scripts 'encode-form)
+       (scripts 'encode-form 'vote)
         ;(javascript-tag "SyntaxHighlighter.all({light: true});")
         [:title (:title (find-item 0))]]
       [:body 
@@ -149,9 +149,13 @@
 
 (defn gen-vote-buttons [item]
    (html 
-    [:div.up [:a {:href (str "/up-vote/" (:id item)) :id (str "up_" (:id item))} 
-	       [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]
-    [:div.down [:a {:href (str "/down-vote/" (:id item)) :id (str "down_" (:id item)) } 
+    [:div.up [:a {:href (str "/up-vote/" (:id item))
+		  :id (str "up_" (:id item))
+		  :onclick "return vote(this)"} 
+	      [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]
+    [:div.down [:a {:href (str "/down-vote/" (:id item))
+		    :id (str "down_" (:id item))
+		    :onclick "return vote(this)"} 
 	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]))
 
 
@@ -160,7 +164,8 @@
    [:div.header 
     [:span.votes (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
 		  (gen-vote-buttons item)) ]
-    [:span.points (:votes item) " points by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago |"]
+    [:span {:id (str "score_" (:id item))} (pluralize-noun "point" (:votes item))]
+    [:span.who " by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago |"]
     (when (at-top? item)
       [:span.parent [:a {:href (str "/item/" (:parent item))} "parent"]])
     (when (not (at-top? item))
