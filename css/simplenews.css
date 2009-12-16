@@ -59,6 +59,7 @@ h1 {
 }
 h2 {font-size:1.875em}
 .itemtitle {
+    font-size: 1.5em;
     font-family: Verdana, Geneva, sans-serif;
     color: #000;
     position: relative;
@@ -66,16 +67,19 @@ h2 {font-size:1.875em}
 }
 .level0 {
     font-family: Verdana, Geneva, sans-serif;
+    font-size: 0.70em;
     left: 0cm;
     padding: 15px;
 }
 .level1 {
+    font-size: 0.70em;
     position: relative;
     left: 1cm;
     font-family: Verdana, Geneva, sans-serif;
     padding: 15px;
 }
 .level2 {
+    font-size: 0.70em;
     font-family: Verdana, Geneva, sans-serif;
     left: 2cm;
     position: relative;
@@ -83,51 +87,59 @@ h2 {font-size:1.875em}
     padding: 15px;
 }
 .level3 {
+    font-size: 0.70em;
     font-family: Verdana, Geneva, sans-serif;
     left: 3cm;
     position: relative;
     paddign: 15px;
 }
 .level4 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 4cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 4cm;
+    position: relative;
 }
 
 .level5 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 5cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 5cm;
+    position: relative;
 }
 .level6 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 6cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 6cm;
+    position: relative;
 }
 .level7 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 7cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 7cm;
+    position: relative;
 }
 .level8 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 8cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 8cm;
+    position: relative;
 }
 .level9 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 9cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 9cm;
+    position: relative;
 }
 .level10 {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 10cm;
-	position: relative;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 10cm;
+    position: relative;
 }
 .levelmax {
-	font-family: Verdana, Geneva, sans-serif;
-	left: 11cm;
-	position: relative;
+    font-size: 0.70em;
+    font-family: Verdana, Geneva, sans-serif;
+    left: 11cm;
+    position: relative;
 }
 #submittitle {
     position: absolute;
