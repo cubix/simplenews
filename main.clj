@@ -73,7 +73,7 @@
 			(filter #(or (= (:tag %) ::simplenews.model/Url)
 				     (= (:tag %) ::simplenews.model/Essay))
 				(map find-item 
-				     (:children (find-item 0)))))))
+				     (:children (find-item 0)))))) *user-key*)
 	     *auth* *user-key*))
 
 (defn do-delete []

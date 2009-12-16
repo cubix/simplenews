@@ -82,11 +82,12 @@
    (show-url-field item)))
 
 (defn show-edit-submit [item]
-  [:div#editbutton [:input {:type "submit"
-			    :name "submitcomment"
-			    :value "update"
-			    :onClick (str "document.getElementById('body').value = "
-					  "escapeVal(document.getElementById('comment-in').value)")}]])
+  [:div#editbutton
+   [:input {:type "submit"
+	    :name "submitcomment"
+	    :value "update"
+	    :onClick (str "byId('body').value = "
+			  "escapeVal(byId('comment-in').value)")}]])
 
 (defn show-edit-form [item]
   (html 
@@ -128,12 +129,12 @@
 
 (defn gen-status-line [item]
   (let [comment-count (count-children item)]
-    (html (name (:submitter item)) " | "
-	  (time-since (:timestamp item)) " | " 
-	  (pluralize-noun "point" (:votes item))
-	  " | "
-	  [:a {:href (str "/item/" (:id item))} 
-	   (pluralize-noun "comment" comment-count "discuss" 0)])))
+    (html 
+     [:span {:id (str "score_" (:id item))} (pluralize-noun "point" (:votes item))]
+     [:span.who " by " (name (:submitter item)) " " (time-since (:timestamp item)) "ago | " ]
+     [:span.link
+      [:a {:href (str "/item/" (:id item))} 
+       (pluralize-noun "comment" comment-count "discuss" 0)]])))
 
 (defn indent-class
   "Determines div class for indentation level."
@@ -146,24 +147,26 @@
 (defn at-top? [item]
   (= (:level item) 0))
 
+(defn gen-vote-button [dir item auth]
+  [:div {:class dir} 
+   [:a {:href (if auth (str "/" dir "-vote/" (:id item)) "/login")
+	:id (str dir "_" (:id item))
+	:onclick (if auth "return vote(this)" "")} 
+    [:img.updown {:src (str "/images/" dir "arrow.gif") :alt dir}]]])
 
-(defn gen-vote-buttons [item]
-   (html 
-    [:div.up [:a {:href (str "/up-vote/" (:id item))
-		  :id (str "up_" (:id item))
-		  :onclick "return vote(this)"} 
-	      [:img.updown {:src "/images/uparrow.gif" :alt "up"}]]]
-    [:div.down [:a {:href (str "/down-vote/" (:id item))
-		    :id (str "down_" (:id item))
-		    :onclick "return vote(this)"} 
-	       [:img.updown {:src "/images/downarrow.gif" :alt "down"}]]]))
+(def gen-vote-up-button (partial gen-vote-button "up"))
+(def gen-vote-down-button (partial gen-vote-button "down"))
 
+(defn gen-vote-buttons [item auth]
+  (html
+   (gen-vote-up-button item auth)
+   (gen-vote-down-button item auth)))
 
 (defn gen-comment-bar [item auth user-id]
   (html 
    [:div.header 
     [:span.votes (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
-		  (gen-vote-buttons item)) ]
+		  (gen-vote-buttons item auth)) ]
     [:span {:id (str "score_" (:id item))} (pluralize-noun "point" (:votes item))]
     [:span.who " by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago |"]
     (when (at-top? item)
@@ -196,11 +199,11 @@
 (defn gen-title-link [item]
   [:a {:href (derive-url item)} [:p.front-title-text (:title item) ]])
 
-(defn show-front [items]
+(defn show-front [items user]
   (html (map (fn [item]
 	       [:div.frontitem
 		[:span.enum (str (:enumeration item) ".")]
-		[:span.votebuttons (gen-vote-buttons item)]
+		[:span.votebuttons (when (not (voted? user (:id item))) (gen-vote-buttons item user))]
 		[:span.fronttitle (gen-title-link item)]
 		[:span.statusline (gen-status-line item)]])
 	     items)))
