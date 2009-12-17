@@ -112,6 +112,8 @@
     (serve-file *js-dir* (str (params :script) ".js")))
   (GET "/images/:image.gif"
     (serve-file *image-dir* (str (params :image) ".gif")))
+  (GET "/favicon.ico"
+    (serve-file *image-dir* "favicon.ico.gif"))
   (GET "/item/:id"
     (par-bind (do-item)))
   (GET "/new-user"
