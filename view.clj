@@ -25,7 +25,6 @@
        (styles 'simplenews )
        ;[:script {:src "http://www.google.com/jsapi"}]
        (scripts 'encode-form 'vote)
-        ;(javascript-tag "SyntaxHighlighter.all({light: true});")
         [:title (:title (find-item 0))]]
       [:body 
        [:div.navigator 
@@ -33,8 +32,8 @@
 	[:span.tab [:a {:href "/submit"} "Submit"]]
 	(if auth
 	  (html [:span.tab [:a {:href "/logout"} "Logout"]]
-		[:span.tab (str (name user-id) "(" (:karma (find-user user-id)) ")")]
-		)
+		[:span.tab (str (name user-id) 
+				"(" (:karma (find-user user-id)) ")")])
 	  [:span.tab [:a {:href "/login"} "Login"]])]
 	[:div.outerbox page]]]))
 
@@ -54,8 +53,11 @@
 (defn show-comment-field [item]
   (html
    (hidden-field "body")
-   [:div#editcommentlbl (label "comment-lbl" "Comment")]
-   [:div#editcomment (text-area "comment-in" (convert-br-to-nl (item :body)))]))
+   [:div#editcommentlbl 
+    (label "comment-lbl" "Comment")]
+   [:div#editcomment 
+    (text-area "comment-in" 
+	       (convert-br-to-nl (item :body)))]))
 
 (defn show-title-field [item]
      [:div#edittitle (label "title-lbl" "Title")
@@ -91,7 +93,9 @@
 
 (defn show-edit-form [item]
   (html 
-   (form-to [:post (str "/edit/" (if (:id item) (:id item) 0))]
+   (form-to [:post (str "/edit/" 
+			(if (:id item)
+			  (:id item) 0))]
      (hidden-field "parent-id" (:parent item))
      (show-edit-fields item)
      (show-edit-submit item))))
@@ -113,25 +117,36 @@
   (html
      [:div#newuserform
       (form-to [:post (str "/new-user")]
-	[:div (label "username-lbl" "Username") (text-field "username") ]
-	[:div (label "password-lbl" "Password") (password-field "password") ]
-	[:div (label "confirm-lbl" "Confirm") (password-field "confirm") ]
+	[:div 
+	 (label "username-lbl" "Username") 
+	 (text-field "username") ]
+	[:div 
+	 (label "password-lbl" "Password")
+	 (password-field "password") ]
+	[:div 
+	 (label "confirm-lbl" "Confirm")
+	 (password-field "confirm") ]
 	[:div (submit-button "submit")])]))
 
 (defn show-login-form []
   (html
+   [:div#login
    (form-to [:get (str "/auth-user")]
      [:div (label "username-lbl" "Username")
       (text-field "username")]
      [:div (label "password-lbl" "Password")
       (password-field "password")]
-     [:div (submit-button "submit")])))
+     [:div (submit-button "submit")])
+   [:div#register "Click " 
+    [:a {:href "/new-user"} "here"] " to register"]]))
 
 (defn gen-status-line [item]
   (let [comment-count (count-children item)]
     (html 
-     [:span {:id (str "score_" (:id item))} (pluralize-noun "point" (:votes item))]
-     [:span.who " by " (name (:submitter item)) " " (time-since (:timestamp item)) "ago | " ]
+     [:span {:id (str "score_" (:id item))} 
+      (pluralize-noun "point" (:votes item))]
+     [:span.who " by " (name (:submitter item)) " "
+      (time-since (:timestamp item)) " ago | " ]
      [:span.link
       [:a {:href (str "/item/" (:id item))} 
        (pluralize-noun "comment" comment-count "discuss" 0)]])))
@@ -165,10 +180,14 @@
 (defn gen-comment-bar [item auth user-id]
   (html 
    [:div.header 
-    [:span.votes (when (and (not (deleted? item)) (not (voted? user-id (:id item))))
+    [:span.votes (when (and (not (deleted? item)) 
+			    (not (voted? user-id (:id item))))
 		  (gen-vote-buttons item auth)) ]
-    [:span {:id (str "score_" (:id item))} (pluralize-noun "point" (:votes item))]
-    [:span.who " by " (name (:submitter item)) " " (time-since (:timestamp item)) " ago |"]
+    [:span 
+     {:id (str "score_" (:id item))}
+     (pluralize-noun "point" (:votes item))]
+    [:span.who " by " (name (:submitter item)) " " 
+     (time-since (:timestamp item)) " ago |"]
     (when (at-top? item)
       [:span.parent [:a {:href (str "/item/" (:parent item))} "parent"]])
     (when (not (at-top? item))

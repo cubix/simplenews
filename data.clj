@@ -20,4 +20,5 @@
   (send-off (agent [dir sleep-time]) backup-agent)
   (Thread/sleep sleep-time))
 
-;(backup-agent [*data-dir* *sleep-time*])
+(load-state-files *data-dir*)
+(backup-agent [*data-dir* *sleep-time*])

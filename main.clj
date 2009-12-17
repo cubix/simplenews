@@ -63,9 +63,10 @@
 
 (defn do-edit []
   (let [item (find-item *id*)]
-    (when (= *user-key* (:submitter item))
-      (edit-item (edited-item item *param*))
-      (redirect-to (str "/item/" *id*)))))
+    (when (and (= *user-key* (:submitter item))
+	       (not (deleted? item)))
+      (edit-item (edited-item item *param*)))
+      (redirect-to (str "/item/" *id*))))
 
 (defn do-front []
   (show-page (show-front
@@ -143,8 +144,10 @@
   (GET "/edit/:id"
     (par-bind
       (let [item (find-item *id*)]
-	(show-page (show-edit-form item)
-		   *auth* *user-key*))))
+	(if (not (deleted? item))
+	  (show-page (show-edit-form item)
+		     *auth* *user-key*)
+	  (redirect-to (str "/item/" *id*))))))
   (POST "/edit/:id"
     (par-bind
       (do-edit)))

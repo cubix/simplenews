@@ -83,7 +83,6 @@ h2 {font-size:1.875em}
     font-family: Verdana, Geneva, sans-serif;
     left: 2cm;
     position: relative;
-    border-bottom-stye: none
     padding: 15px;
 }
 .level3 {
@@ -296,7 +295,7 @@ label {
 }
 .statusline {
     position: absolute;
-    font-size:0.4em;
+    font-size:x-small;
     font-family: Verdana, Geneva, sans-serif;
     left: 44px;
     top: 25px;
@@ -377,5 +376,17 @@ label {
     padding: 3px;
 }
 .delete {
+    padding: 3px;
+}
+#login {
+ position: relative;
+ left: 50px;
+    top: 50px;
+}
+#register {
+    position: relative;
+    font-size: 0.70em;
+    left: 20px;
+    font-family: Verdana, Geneva, sans-serif;
     padding: 3px;
 }
