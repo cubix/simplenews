@@ -153,7 +153,7 @@
   (dosync
    (let [item (find-item item-id)
 	 parent-item (find-item (:parent item))]
-     (when (not (has-children? item))
+     (when-not (has-children? item)
        (ref-set item-list (dissoc (get-item-list) item-id item))
        (update-item-list (remove-child parent-item item-id))))))
 

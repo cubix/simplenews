@@ -144,7 +144,7 @@
   (GET "/edit/:id"
     (par-bind
       (let [item (find-item *id*)]
-	(if (not (deleted? item))
+	(if-not (deleted? item)
 	  (show-page (show-edit-form item)
 		     *auth* *user-key*)
 	  (redirect-to (str "/item/" *id*))))))
