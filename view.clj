@@ -190,7 +190,7 @@
      (time-since (:timestamp item)) " ago |"]
     (when (at-top? item)
       [:span.parent [:a {:href (str "/item/" (:parent item))} "parent"]])
-    (when (not (at-top? item))
+    (when-not (at-top? item)
       [:span.reply  [:a {:href (str "/item/" (:id item))} "reply"]])
     (when (and (user-owns-item? item user-id) (not-frozen? item))
       [:span.edit [:a {:href (str "/edit/" (:id item))} "edit"]])
@@ -222,7 +222,8 @@
   (html (map (fn [item]
 	       [:div.frontitem
 		[:span.enum (str (:enumeration item) ".")]
-		[:span.votebuttons (when (not (voted? user (:id item))) (gen-vote-buttons item user))]
+		[:span.votebuttons (when-not (voted? user (:id item)) 
+				     (gen-vote-buttons item user))]
 		[:span.fronttitle (gen-title-link item)]
 		[:span.statusline (gen-status-line item)]])
 	     items)))

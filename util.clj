@@ -23,6 +23,18 @@
 		    { k (if (instance? String v) (nil-if-blank (clean-input v)) v)}) m)) 
       {}))
 
+(defn the-str
+  "Returns the name or string representation of x"
+  [x]
+  (if (instance? clojure.lang.Named x)
+    (name x)
+    (str x)))
+
+(defn str-to-kws [rec]
+  (zipmap (map keyword (keys rec))
+          (vals rec)))
+
+
 (defn mod-map [m kfn vfn]
   (or (apply merge 
 	     (map (fn [[k v]]
